@@ -108,17 +108,20 @@ public class QR002View extends VerticalLayout {
         // hasil.getId()).setHeader("Id").setKey("id1");
         NumberFormat numberFormat = NumberFormat.getNumberInstance(Locale.US);
 
-        crud.getGrid().addColumn(hasil -> hasil.getHiddenId()).setHeader("Nomer").setKey("nomer1");
-        crud.getGrid().addColumn(hasil -> hasil.getMId()).setHeader("Merchant Id").setKey("mid1");
-        crud.getGrid().addColumn(hasil -> hasil.getCardNum()).setHeader("Card Number").setKey("cardnum1");
-        crud.getGrid().addColumn(hasil -> hasil.getCount()).setHeader("Total Transactions").setKey("totalTrx1");
+        crud.getGrid().addColumn(hasil -> hasil.getHiddenId()).setHeader("Nomer").setKey("nomer1").setSortable(true);
+        crud.getGrid().addColumn(hasil -> hasil.getMId()).setHeader("Merchant Id").setKey("mid1").setSortable(true);
+        crud.getGrid().addColumn(hasil -> hasil.getCardNum()).setHeader("Card Number").setKey("cardnum1")
+                .setSortable(true);
+        crud.getGrid().addColumn(hasil -> hasil.getCount()).setHeader("Total Transactions").setKey("totalTrx1")
+                .setSortable(true);
         crud.getGrid().addColumn(hasil -> numberFormat.format(hasil.getSum()).toString())
                 .setHeader("Total Transactions Amount")
-                .setKey("totalTrxAmount");
-        crud.getGrid().addColumn(hasil -> hasil.getDate()).setHeader("Date").setKey("date1");
-        crud.getGrid().addColumn(hasil -> hasil.getRule()).setHeader("Rule").setKey("rule1");
-        crud.getGrid().addColumn(hasil -> hasil.getMemo()).setHeader("Memo").setKey("memo1");
-        crud.getGrid().addColumn(hasil -> hasil.getReviewBy()).setHeader("Review By").setKey("review1");
+                .setKey("totalTrxAmount").setSortable(true);
+        crud.getGrid().addColumn(hasil -> hasil.getDate()).setHeader("Date").setKey("date1").setSortable(true);
+        crud.getGrid().addColumn(hasil -> hasil.getRule()).setHeader("Rule").setKey("rule1").setSortable(true);
+        crud.getGrid().addColumn(hasil -> hasil.getMemo()).setHeader("Memo").setKey("memo1").setSortable(true);
+        crud.getGrid().addColumn(hasil -> hasil.getReviewBy()).setHeader("Review By").setKey("review1")
+                .setSortable(true);
 
         // crud.getGrid().removeColumnByKey("MId");
 

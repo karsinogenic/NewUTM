@@ -69,7 +69,7 @@ public class HistoryView extends VerticalLayout {
         DatePicker datePickerEnd = new DatePicker("Tanggal Akhir");
         DatePicker.DatePickerI18n singleFormatI18nEnd = new DatePicker.DatePickerI18n();
         singleFormatI18nEnd.setDateFormat("yyyy-MM-dd");
-        datePicker.setI18n(singleFormatI18nEnd);
+        datePickerEnd.setI18n(singleFormatI18nEnd);
 
         ComboBox<String> status = new ComboBox<>("Status");
         status.setItems("Consider Genuine", "Genuine", "Suspect", "Fraud");
@@ -84,11 +84,12 @@ public class HistoryView extends VerticalLayout {
 
         btn.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
 
-        hl1.add(datePicker, status, rule, cardnum, btn);
-        hl1.setFlexGrow(1, datePicker, status, rule, cardnum);
+        hl1.add(datePicker, datePickerEnd, status, rule, cardnum, btn);
+        hl1.setFlexGrow(1, datePicker, datePickerEnd, status, rule, cardnum);
         hl1.setAlignItems(FlexComponent.Alignment.END);
 
-        btn.addClickListener(event -> searchData(event, datePicker.getValue(), status.getValue(), rule.getValue(),
+        btn.addClickListener(event -> searchData(event, datePicker.getValue(), datePickerEnd.getValue(),
+                status.getValue(), rule.getValue(),
                 cardnum.getValue()));
 
         List<RuleResult> ruleResults = this.ruleResultRepository
@@ -119,17 +120,20 @@ public class HistoryView extends VerticalLayout {
 
         NumberFormat numberFormat = NumberFormat.getNumberInstance(Locale.US);
 
-        crud.getGrid().addColumn(hasil -> hasil.getHiddenId()).setHeader("Nomer").setKey("nomer1");
-        crud.getGrid().addColumn(hasil -> hasil.getMId()).setHeader("Merchant Id").setKey("mid1");
-        crud.getGrid().addColumn(hasil -> hasil.getCardNum()).setHeader("Card Number").setKey("cardnum1");
-        crud.getGrid().addColumn(hasil -> hasil.getCount()).setHeader("Total Transactions").setKey("totalTrx1");
+        crud.getGrid().addColumn(hasil -> hasil.getHiddenId()).setHeader("Nomer").setKey("nomer1").setSortable(true);
+        crud.getGrid().addColumn(hasil -> hasil.getMId()).setHeader("Merchant Id").setKey("mid1").setSortable(true);
+        crud.getGrid().addColumn(hasil -> hasil.getCardNum()).setHeader("Card Number").setKey("cardnum1")
+                .setSortable(true);
+        crud.getGrid().addColumn(hasil -> hasil.getCount()).setHeader("Total Transactions").setKey("totalTrx1")
+                .setSortable(true);
         crud.getGrid().addColumn(hasil -> numberFormat.format(hasil.getSum()).toString())
                 .setHeader("Total Amount")
-                .setKey("totalTrxAmount");
-        crud.getGrid().addColumn(hasil -> hasil.getDate()).setHeader("Date").setKey("date1");
-        crud.getGrid().addColumn(hasil -> hasil.getRule()).setHeader("Rule").setKey("rule1");
-        crud.getGrid().addColumn(hasil -> hasil.getMemo()).setHeader("Memo").setKey("memo1");
-        crud.getGrid().addColumn(hasil -> hasil.getReviewBy()).setHeader("Review By").setKey("review1");
+                .setKey("totalTrxAmount").setSortable(true);
+        crud.getGrid().addColumn(hasil -> hasil.getDate()).setHeader("Date").setKey("date1").setSortable(true);
+        crud.getGrid().addColumn(hasil -> hasil.getRule()).setHeader("Rule").setKey("rule1").setSortable(true);
+        crud.getGrid().addColumn(hasil -> hasil.getMemo()).setHeader("Memo").setKey("memo1").setSortable(true);
+        crud.getGrid().addColumn(hasil -> hasil.getReviewBy()).setHeader("Review By").setKey("review1")
+                .setSortable(true);
 
         detail.addClickListener(event -> {
             Notification newNotification = new Notification();
@@ -156,18 +160,22 @@ public class HistoryView extends VerticalLayout {
 
     }
 
-    private void searchData(ClickEvent<Button> event, LocalDate localDate, String status, String rule,
+    private void searchData(ClickEvent<Button> event, LocalDate localDate, LocalDate localDate2, String status,
+            String rule,
             String cardnum) {
         StringBuilder jpql = new StringBuilder("SELECT rr FROM RuleResult rr");
         List<String> queryList = new ArrayList<>();
 
-        if (localDate != null) {
-            queryList.add(" rr.date = '" + localDate + "'");
-        } else if (status != null && !status.isEmpty()) {
+        if (localDate != null && localDate2 != null) {
+            queryList.add(" rr.date BETWEEN'" + localDate + "' AND '" + localDate2 + "'");
+        }
+        if (status != null && !status.isEmpty()) {
             queryList.add(" rr.status = '" + status + "'");
-        } else if (rule != null && !rule.isEmpty()) {
+        }
+        if (rule != null && !rule.isEmpty()) {
             queryList.add(" rr.rule = '" + rule + "'");
-        } else if (cardnum != null && !cardnum.isEmpty()) {
+        }
+        if (cardnum != null && !cardnum.isEmpty()) {
             queryList.add(" rr.cardnum = '" + cardnum + "'");
         }
 

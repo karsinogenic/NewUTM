@@ -83,6 +83,8 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
 
     private List<RuleResult> qrRuleResults;
 
+    private String role;
+
     public MainLayout(VaadinSessionConfiguration vaadinSessionConfiguration, UserRepository userRepository,
             CustomRule customRule, AmlaRuleResultRepository amlaRuleResultRepository,
             RuleResultRepository ruleResultRepository) {
@@ -95,10 +97,13 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
 
         this.customRule.allRule(LocalDate.now().minusDays(1));
 
+        role = roleService.getRole();
+
         User optUser = this.userRepository.findByNrik(roleService.getName());
         currentUsername = optUser.getUsername();
         VaadinSession.getCurrent().setAttribute("name", currentUsername);
         VaadinSession.getCurrent().setAttribute("username", roleService.getName());
+        VaadinSession.getCurrent().setAttribute("role", role);
 
         // VaadinSession.getCurrent().setAttribute("username", roleService.getName());
         // System.out.println("username1 :" +
@@ -263,6 +268,11 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
         AppNavItem subNavQR = new AppNavItem("QR", "qr");
         AppNavItem subNavAMLA = new AppNavItem("AMLA", "amla");
         AppNavItem subNavUser = new AppNavItem("USER", "user");
+        subNavUser.setVisible(false);
+
+        if (role.contains("ADMIN")) {
+            subNavUser.setVisible(true);
+        }
         // AppNavItem qrInbox = new AppNavItem("Inbox", QR002View.class,
         // VaadinIcon.ENVELOPE.create());
         Icon icon = VaadinIcon.BOOK.create();
@@ -272,7 +282,9 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
 
         subNavAMLA.addItem(new AppNavItem("Inbox", "amla/inbox", inboxAMLACounter));
         subNavAMLA.addItem(new AppNavItem("History", "amla/history", historyAMLACounter));
-        subNavAMLA.addItem(new AppNavItem("Approval", "amla/approval", inboxAMLACounterApproval));
+        if (!role.contains("ANALYST")) {
+            subNavAMLA.addItem(new AppNavItem("Approval", "amla/approval", inboxAMLACounterApproval));
+        }
         // nav.addItem(new AppNavItem("Dashboard", DashboardView.class));
         nav.addItem(subNavQR, subNavAMLA, subNavUser);
         // nav.addItem(new AppNavItem("TEST", TestView.class));

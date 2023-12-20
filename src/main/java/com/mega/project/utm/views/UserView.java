@@ -22,8 +22,9 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
 import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 
-@PermitAll
+@RolesAllowed({ "ROLE_ADMIN" })
 @PageTitle("User")
 @Route(value = "user", layout = MainLayout.class)
 public class UserView extends VerticalLayout {
@@ -93,7 +94,7 @@ public class UserView extends VerticalLayout {
 
         TextField nrik = new TextField("Nrik");
         ComboBox<String> role = new ComboBox<>("Role");
-        role.setItems("AMLA_ANALYST", "AMLA_APPROVER", "QR_ANALYST", "ADMIN");
+        role.setItems("APPROVER", "ANALYST", "ADMIN");
         TextField username = new TextField("Username");
 
         if (Id != null) {

@@ -94,12 +94,18 @@ public class DetailAMLAView extends VerticalLayout implements HasUrlParameter<St
         String param = new String(Base64.getDecoder().decode(parameter));
         String[] param1 = param.split("_");
 
+        String role = VaadinSession.getCurrent().getAttribute("role").toString();
+
         String query = "select * from \"";
 
         if (param1[0].equals("TRM005")) {
             query += "MERCH_MENYIMPANG_B\" ";
         } else if (param1[0].equals("TRM004")) {
             query += "MERCH_MENYIMPANG_A\" ";
+        } else if (param1[0].equals("TRM007")) {
+            query += "MENYIMPANG_B\" ";
+        } else if (param1[0].equals("TRM001")) {
+            query += "MENYIMPANG_A\" ";
         } else {
             query += "REFUND_POIN\" ";
         }
@@ -230,7 +236,11 @@ public class DetailAMLAView extends VerticalLayout implements HasUrlParameter<St
         });
 
         memoApproval.add(approvalBtn, refusalBtn);
-        memoApproval.setVisible((ruleResult.getIsApproved() != null || latestMemos.isEmpty()) ? false : true);
+        if (role.contains("ANALYST") || role.contains("USER")) {
+            memoApproval.setVisible(false);
+        } else {
+            memoApproval.setVisible((ruleResult.getIsApproved() != null || latestMemos.isEmpty()) ? false : true);
+        }
 
         HorizontalLayout memoCombo = new HorizontalLayout();
         Label statusLabel = new Label("Latest Status");

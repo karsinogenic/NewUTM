@@ -81,13 +81,13 @@ public class HistoryAMLAView extends VerticalLayout {
         DatePicker datePickerEnd = new DatePicker("Tanggal Akhir");
         DatePicker.DatePickerI18n singleFormatI18nEnd = new DatePicker.DatePickerI18n();
         singleFormatI18nEnd.setDateFormat("yyyy-MM-dd");
-        datePicker.setI18n(singleFormatI18nEnd);
+        datePickerEnd.setI18n(singleFormatI18nEnd);
 
         ComboBox<String> status = new ComboBox<>("Status");
         status.setItems("Consider Genuine", "Genuine", "Suspect", "Fraud");
 
         ComboBox<String> rule = new ComboBox<>("Rule");
-        rule.setItems("TRM001", "TRM002", "TRM003", "TRM004", "TRM005");
+        rule.setItems("TRM001", "TRM002", "TRM003", "TRM004", "TRM005", "TRM006", "TRM007");
 
         TextField cardnum = new TextField("Card Number");
         TextField mid = new TextField("Merchant Id");
@@ -96,11 +96,11 @@ public class HistoryAMLAView extends VerticalLayout {
 
         btn.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
 
-        hl1.add(datePicker, status, rule, btn);
-        hl1.setFlexGrow(1, datePicker, status, rule);
+        hl1.add(datePicker, datePickerEnd, status, rule, btn);
+        hl1.setFlexGrow(1, datePicker, datePickerEnd, status, rule);
         hl1.setAlignItems(FlexComponent.Alignment.END);
 
-        btn.addClickListener(event -> searchData(event, datePicker.getValue(),
+        btn.addClickListener(event -> searchData(event, datePicker.getValue(), datePickerEnd.getValue(),
                 status.getValue(), rule.getValue(),
                 cardnum.getValue()));
 
@@ -131,7 +131,7 @@ public class HistoryAMLAView extends VerticalLayout {
 
         NumberFormat numberFormat = NumberFormat.getNumberInstance(Locale.US);
 
-        crud.getGrid().addColumn(hasil -> hasil.getHiddenId()).setHeader("Nomer").setKey("nomer1");
+        crud.getGrid().addColumn(hasil -> hasil.getHiddenId()).setHeader("Nomer").setKey("nomer1").setSortable(true);
         // crud.getGrid().addColumn(hasil -> hasil.getMId()).setHeader("Merchant
         // Id").setKey("mid1");
         // crud.getGrid().addColumn(hasil -> hasil.getCardNum()).setHeader("Card
@@ -142,11 +142,13 @@ public class HistoryAMLAView extends VerticalLayout {
         // numberFormat.format(hasil.getSum()).toString())
         // .setHeader("Total Transactions Amount")
         // .setKey("totalTrxAmount");
-        crud.getGrid().addColumn(hasil -> hasil.getPostDate()).setHeader("Date").setKey("date1");
-        crud.getGrid().addColumn(hasil -> hasil.getTriggeredRule()).setHeader("Rule").setKey("rule1");
-        crud.getGrid().addColumn(hasil -> hasil.getMemo()).setHeader("Memo").setKey("memo1");
-        crud.getGrid().addColumn(hasil -> hasil.getApprovedBy()).setHeader("Approved By").setKey("approve1");
-        crud.getGrid().addColumn(hasil -> hasil.getReviewBy()).setHeader("Review By").setKey("review1");
+        crud.getGrid().addColumn(hasil -> hasil.getPostDate()).setHeader("Date").setKey("date1").setSortable(true);
+        crud.getGrid().addColumn(hasil -> hasil.getTriggeredRule()).setHeader("Rule").setKey("rule1").setSortable(true);
+        crud.getGrid().addColumn(hasil -> hasil.getMemo()).setHeader("Memo").setKey("memo1").setSortable(true);
+        crud.getGrid().addColumn(hasil -> hasil.getApprovedBy()).setHeader("Approved By").setKey("approve1")
+                .setSortable(true);
+        crud.getGrid().addColumn(hasil -> hasil.getReviewBy()).setHeader("Review By").setKey("review1")
+                .setSortable(true);
         // crud.getGrid()
         // .addColumn(hasil -> hasil.getIsApproved() == null ? "Pending"
         // : hasil.getIsApproved() == true ? "Approved" : "Denied")
@@ -172,7 +174,9 @@ public class HistoryAMLAView extends VerticalLayout {
                 return pendingx;
             }
 
-        }).setHeader("Approval Status");
+        }).setHeader("Approval Status").setSortable(true);
+
+        crud.getGrid().addColumn(hasil -> hasil.getStatus()).setHeader("Status").setSortable(true);
 
         detail.addClickListener(event -> {
             String base64 = Base64.getEncoder().encodeToString((RuleCode + "_" + AmlaId + "_" + Id).getBytes());
@@ -200,16 +204,19 @@ public class HistoryAMLAView extends VerticalLayout {
 
     }
 
-    private void searchData(ClickEvent<Button> event, LocalDate localDate, String status, String rule,
+    private void searchData(ClickEvent<Button> event, LocalDate localDate, LocalDate localDateEnd, String status,
+            String rule,
             String cardnum) {
         StringBuilder jpql = new StringBuilder("SELECT rr FROM AmlaRuleResult rr");
         List<String> queryList = new ArrayList<>();
 
-        if (localDate != null) {
-            queryList.add(" rr.postDate = '" + localDate + "'");
-        } else if (status != null && !status.isEmpty()) {
+        if (localDate != null && localDateEnd != null) {
+            queryList.add(" rr.postDate BETWEEN '" + localDate + "' AND '" + localDateEnd + "'");
+        }
+        if (status != null && !status.isEmpty()) {
             queryList.add(" rr.status = '" + status + "'");
-        } else if (rule != null && !rule.isEmpty()) {
+        }
+        if (rule != null && !rule.isEmpty()) {
             queryList.add(" rr.rule = '" + rule + "'");
         }
         // if (cardnum != null && !cardnum.isEmpty()) {

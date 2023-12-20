@@ -25,6 +25,8 @@ import com.mega.project.utm.Models.AMLA.AmlaRuleResult;
 import com.mega.project.utm.Models.AMLA.RefundPoinC;
 import com.mega.project.utm.Repositories.AmlaRuleResultRepository;
 import com.mega.project.utm.Repositories.HistoryMerchTransRepository;
+import com.mega.project.utm.Repositories.MenyimpangA_Repository;
+import com.mega.project.utm.Repositories.MenyimpangB_Repository;
 import com.mega.project.utm.Repositories.MerchMenyimpangA_Repository;
 import com.mega.project.utm.Repositories.MerchMenyimpangB_Repository;
 import com.mega.project.utm.Repositories.MerchantRepository;
@@ -57,6 +59,10 @@ public class ApiMainController {
     private AmlaRuleResultRepository amlaRuleResultRepository;
     @Autowired
     private RuleResultRepository ruleResultRepository;
+    @Autowired
+    private MenyimpangA_Repository menyimpangA_Repository2;
+    @Autowired
+    private MenyimpangB_Repository menyimpangB_Repository2;
 
     private JulianFields julianFields;
 
@@ -74,40 +80,46 @@ public class ApiMainController {
         return this.customRule.executeAmla(customQuery.TRM002());
     }
 
-    @GetMapping("testAmla1")
-    public void newAmla() {
-        CustomRule customRule = new CustomRule(jdbcQueryService, historyMerchTransRepository, null, null, null,
-                refundPoinC_Repository);
-        customRule.setMerchMenyimpangA_Repository(menyimpangA_Repository);
-        customRule.setMerchMenyimpangB_Repository(menyimpangB_Repository);
+    // @GetMapping("testAmla1")
+    // public void newAmla() {
+    // CustomRule customRule = new CustomRule(jdbcQueryService,
+    // historyMerchTransRepository, null, null, null,
+    // refundPoinC_Repository);
+    // customRule.setMerchMenyimpangA_Repository(menyimpangA_Repository);
+    // customRule.setMerchMenyimpangB_Repository(menyimpangB_Repository);
 
-        customRule.allAmla(LocalDate.of(2023, 11, 8));
-    }
+    // customRule.allAmla(LocalDate.of(2023, 11, 8));
+    // }
 
-    @GetMapping("testAmla2")
-    public List<AmlaRuleResult> newAmla2() {
-        List<AmlaRuleResult> hasil = new ArrayList<>();
-        CustomRule customRule = new CustomRule(jdbcQueryService, historyMerchTransRepository, null, null, null,
-                refundPoinC_Repository);
-        customRule.setMerchMenyimpangA_Repository(menyimpangA_Repository);
-        customRule.setMerchMenyimpangB_Repository(menyimpangB_Repository);
-        customRule.setAmlaRuleResultRepository(amlaRuleResultRepository);
+    // @GetMapping("testAmla2")
+    // public List<AmlaRuleResult> newAmla2() {
+    // List<AmlaRuleResult> hasil = new ArrayList<>();
+    // CustomRule customRule = new CustomRule(jdbcQueryService,
+    // historyMerchTransRepository, null, null, null,
+    // refundPoinC_Repository);
+    // customRule.setMerchMenyimpangA_Repository(menyimpangA_Repository);
+    // customRule.setMerchMenyimpangB_Repository(menyimpangB_Repository);
+    // customRule.setAmlaRuleResultRepository(amlaRuleResultRepository);
 
-        hasil = customRule.allAmla(LocalDate.of(2023, 11, 8));
-        return hasil;
-    }
+    // hasil = customRule.allAmla(LocalDate.of(2023, 11, 8));
+    // return hasil;
+    // }
 
     @PostMapping("findAllAmla")
     public List<AmlaRuleResult> newAmla3(@RequestBody Map isi) {
         List<AmlaRuleResult> hasil = new ArrayList<>();
+        CustomRule customRule = new CustomRule(jdbcQueryService, historyMerchTransRepository, null, null, null,
+                refundPoinC_Repository, menyimpangA_Repository2, menyimpangB_Repository2);
+        customRule.setMerchMenyimpangA_Repository(menyimpangA_Repository);
+        customRule.setMerchMenyimpangB_Repository(menyimpangB_Repository);
+        customRule.setAmlaRuleResultRepository(amlaRuleResultRepository);
         if (isi.get("julian") != null) {
-            CustomRule customRule = new CustomRule(jdbcQueryService, historyMerchTransRepository, null, null, null,
-                    refundPoinC_Repository);
-            customRule.setMerchMenyimpangA_Repository(menyimpangA_Repository);
-            customRule.setMerchMenyimpangB_Repository(menyimpangB_Repository);
-            customRule.setAmlaRuleResultRepository(amlaRuleResultRepository);
 
             hasil = customRule.allAmla(convertToGregorianDate(isi.get("julian").toString()));
+        } else if (isi.get("date") != null) {
+            hasil = customRule.allAmla(LocalDate.parse(isi.get("date").toString()));
+        } else {
+            hasil = customRule.allAmla(LocalDate.now().minusDays(1));
         }
         return hasil;
     }
@@ -115,15 +127,18 @@ public class ApiMainController {
     @PostMapping("findAllQR")
     public List<RuleResult> findAllQR(@RequestBody Map isi) {
         List<RuleResult> hasil = new ArrayList<>();
+        CustomRule customRule = new CustomRule(jdbcQueryService, historyMerchTransRepository, null, null,
+                this.ruleResultRepository,
+                refundPoinC_Repository, menyimpangA_Repository2, menyimpangB_Repository2);
+        customRule.setMerchMenyimpangA_Repository(menyimpangA_Repository);
+        customRule.setMerchMenyimpangB_Repository(menyimpangB_Repository);
+        customRule.setAmlaRuleResultRepository(amlaRuleResultRepository);
         if (isi.get("julian") != null) {
-            CustomRule customRule = new CustomRule(jdbcQueryService, historyMerchTransRepository, null, null,
-                    this.ruleResultRepository,
-                    refundPoinC_Repository);
-            customRule.setMerchMenyimpangA_Repository(menyimpangA_Repository);
-            customRule.setMerchMenyimpangB_Repository(menyimpangB_Repository);
-            customRule.setAmlaRuleResultRepository(amlaRuleResultRepository);
-
             hasil = customRule.allRule(convertToGregorianDate(isi.get("julian").toString()));
+        } else if (isi.get("date") != null) {
+            hasil = customRule.allRule(LocalDate.parse(isi.get("date").toString()));
+        } else {
+            hasil = customRule.allRule(LocalDate.now().minusDays(1));
         }
         return hasil;
     }

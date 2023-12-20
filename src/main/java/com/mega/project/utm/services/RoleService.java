@@ -14,6 +14,19 @@ public class RoleService {
         return authentication.getName();
     }
 
+    public String getRole() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        // System.out.println(authentication.getAuthorities().contains("[ROLE_CHECKER]"));
+        Collection<? extends GrantedAuthority> list = authentication.getAuthorities();
+        Boolean role_check = false;
+        String role = new String();
+
+        for (GrantedAuthority grantedAuthority : list) {
+            role = grantedAuthority.getAuthority();
+        }
+        return role;
+    }
+
     public Boolean isUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         // System.out.println(authentication.getAuthorities().contains("[ROLE_CHECKER]"));

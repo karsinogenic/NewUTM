@@ -135,4 +135,24 @@ public class CustomQuery {
         return query;
     }
 
+    public String TRM001() {
+        String julianDate = ldt.format(DateTimeFormatter.ISO_ORDINAL_DATE).replace("-", "");
+        String query = """
+                select * from "cronos_menyimpang" where "julian_mis_date" ="""
+                + julianDate + """
+                        ;
+                        """;
+        return query;
+    }
+
+    public String TRM007() {
+        String julianDate = ldt.format(DateTimeFormatter.ISO_ORDINAL_DATE).replace("-", "");
+        String query = """
+                select * from "cronos_menyimpang_b" where "julian_mis_date" ="""
+                + julianDate + """
+                        ;
+                        """;
+        return query;
+    }
+
 }

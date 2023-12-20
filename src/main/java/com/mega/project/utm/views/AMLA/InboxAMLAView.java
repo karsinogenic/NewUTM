@@ -113,7 +113,7 @@ public class InboxAMLAView extends VerticalLayout {
         // hasil.getId()).setHeader("Id").setKey("id1");
         NumberFormat numberFormat = NumberFormat.getNumberInstance(Locale.US);
 
-        crud.getGrid().addColumn(hasil -> hasil.getHiddenId()).setHeader("Nomer").setKey("nomer1");
+        crud.getGrid().addColumn(hasil -> hasil.getHiddenId()).setHeader("Nomer").setKey("nomer1").setSortable(true);
         // crud.getGrid().addColumn(hasil -> hasil.getMId()).setHeader("Merchant
         // Id").setKey("mid1");
         // crud.getGrid().addColumn(hasil -> hasil.getCardNum()).setHeader("Card
@@ -124,8 +124,8 @@ public class InboxAMLAView extends VerticalLayout {
         // numberFormat.format(hasil.getSum()).toString())
         // .setHeader("Total Transactions Amount")
         // .setKey("totalTrxAmount");
-        crud.getGrid().addColumn(hasil -> hasil.getPostDate()).setHeader("Date").setKey("date1");
-        crud.getGrid().addColumn(hasil -> hasil.getTriggeredRule()).setHeader("Rule").setKey("rule1");
+        crud.getGrid().addColumn(hasil -> hasil.getPostDate()).setHeader("Date").setKey("date1").setSortable(true);
+        crud.getGrid().addColumn(hasil -> hasil.getTriggeredRule()).setHeader("Rule").setKey("rule1").setSortable(true);
         crud.getGrid().addComponentColumn(new ValueProvider<AmlaRuleResult, Component>() {
 
             @Override
@@ -138,7 +138,7 @@ public class InboxAMLAView extends VerticalLayout {
                 return pendingx;
             }
 
-        }).setHeader("Approval Status");
+        }).setHeader("Approval Status").setSortable(true);
         // crud.getGrid().addColumn(hasil ->
         // hasil.getMemo()).setHeader("Memo").setKey("memo1");
         // crud.getGrid().addColumn(hasil -> hasil.getReviewBy()).setHeader("Review
