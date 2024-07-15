@@ -192,7 +192,7 @@ public class HistoryView extends VerticalLayout {
 
         }
 
-        System.out.println("new query: " + jpql.toString());
+        // System.out.println("new query: " + jpql.toString());
 
         TypedQuery<RuleResult> query = entityManager.createQuery(jpql.toString(), RuleResult.class);
 

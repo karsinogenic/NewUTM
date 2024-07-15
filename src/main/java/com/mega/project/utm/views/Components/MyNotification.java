@@ -29,6 +29,7 @@ public class MyNotification {
         });
         HorizontalLayout layout = new HorizontalLayout(text, closeButton);
         layout.setAlignItems(Alignment.CENTER);
+        notification.setDuration(1000);
 
         notification.add(layout);
         return notification;
@@ -47,6 +48,7 @@ public class MyNotification {
         });
         HorizontalLayout layout = new HorizontalLayout(text, closeButton);
         layout.setAlignItems(Alignment.CENTER);
+        notification.setDuration(1000);
 
         notification.add(layout);
         return notification;
@@ -65,6 +67,7 @@ public class MyNotification {
         });
         HorizontalLayout layout = new HorizontalLayout(text, closeButton);
         layout.setAlignItems(Alignment.CENTER);
+        notification.setDuration(1000);
 
         notification.add(layout);
         return notification;

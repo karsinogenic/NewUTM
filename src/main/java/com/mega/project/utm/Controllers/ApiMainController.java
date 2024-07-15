@@ -8,6 +8,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+// import org.elasticsearch.index.query.BoolQueryBuilder;
+// import org.elasticsearch.index.query.QueryBuilder;
+// import org.elasticsearch.index.query.QueryBuilders;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,8 +26,13 @@ import com.mega.project.utm.Models.Merchant;
 import com.mega.project.utm.Models.QR002;
 import com.mega.project.utm.Models.RuleResult;
 import com.mega.project.utm.Models.TempHistoryMerchTrans;
+import com.mega.project.utm.Models.AMLA.AmlaMerchantRuleResult;
 import com.mega.project.utm.Models.AMLA.AmlaRuleResult;
+import com.mega.project.utm.Models.AMLA.CombinedAmlaMerchant;
+import com.mega.project.utm.Models.AMLA.MerchMenyimpangA;
+import com.mega.project.utm.Models.AMLA.MerchMenyimpangB;
 import com.mega.project.utm.Models.AMLA.RefundPoinC;
+import com.mega.project.utm.Repositories.AmlaMerchantRuleResultRepository;
 import com.mega.project.utm.Repositories.AmlaRuleResultRepository;
 import com.mega.project.utm.Repositories.HistoryMerchTransRepository;
 import com.mega.project.utm.Repositories.MenyimpangA_Repository;
@@ -32,10 +42,18 @@ import com.mega.project.utm.Repositories.MerchMenyimpangB_Repository;
 import com.mega.project.utm.Repositories.MerchantRepository;
 import com.mega.project.utm.Repositories.RefundPoinRepository;
 import com.mega.project.utm.Repositories.RuleResultRepository;
+import com.mega.project.utm.Repositories.SaldoKreditRepository;
 import com.mega.project.utm.services.AESEncryptDecrypt;
 import com.mega.project.utm.services.CustomQuery;
 import com.mega.project.utm.services.CustomRule;
+import com.mega.project.utm.services.ElasticService;
+import com.mega.project.utm.services.ExcelWriteRead;
 import com.mega.project.utm.services.JdbcQueryService;
+
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api/")
@@ -58,6 +76,8 @@ public class ApiMainController {
     @Autowired
     private AmlaRuleResultRepository amlaRuleResultRepository;
     @Autowired
+    private AmlaMerchantRuleResultRepository amlaMerchantRuleResultRepository;
+    @Autowired
     private RuleResultRepository ruleResultRepository;
     @Autowired
     private MenyimpangA_Repository menyimpangA_Repository2;
@@ -66,11 +86,55 @@ public class ApiMainController {
 
     private JulianFields julianFields;
 
+    @Autowired
+    private SaldoKreditRepository saldoKreditRepository;
+
+    @GetMapping("getExcel")
+    public List<AmlaMerchantRuleResult> findAllAmlaMerchant() {
+        List<AmlaMerchantRuleResult> amlaMerchantRuleResults = this.amlaMerchantRuleResultRepository.findAll();
+        ExcelWriteRead excelWriteRead = new ExcelWriteRead();
+        excelWriteRead.writeXLSAmlaMerchant(amlaMerchantRuleResults, "coba.xls");
+        return amlaMerchantRuleResults;
+    }
+
     @GetMapping("test")
-    public List<QR002> test() throws Exception {
-        List<QR002> list = customRule.QR002(LocalDate.parse("2023-10-20"));
+    public List<CombinedAmlaMerchant> test() {
+        List<CombinedAmlaMerchant> list = new ArrayList<>();
+        List<String> listAmlaId = this.amlaMerchantRuleResultRepository.findAmlaIdByIsSentAndIsApprovedIsNull(false);
+        JSONArray array = new JSONArray(listAmlaId);
+        String strArray = array.toString().replace("\"", "'").replace("[", "(").replace("]", ")");
+        System.out.println(array);
+        List<AmlaMerchantRuleResult> listAmla = this.amlaMerchantRuleResultRepository
+                .findByIsSentAndIsApprovedIsNull(false);
+        List<MerchMenyimpangA> merchMenyimpangA = this.menyimpangA_Repository.findByListId(listAmlaId);
+        List<MerchMenyimpangB> merchMenyimpangB = this.menyimpangB_Repository.findByListId(listAmlaId);
+
+        // List<Map<String, Object>> hasil = jdbcQueryService.executeCustomQuery(query);
         return list;
     }
+
+    @GetMapping("ip")
+    public String bobo(HttpServletRequest request) {
+        String client = request.getRemoteAddr();
+        System.out.println(client);
+        System.out.println(request.getLocalAddr());
+        System.out.println(request.getServerName());
+        return client;
+    }
+
+    // @GetMapping("getQuery")
+    // public String getMethodName() {
+    // ElasticService elasticService = new ElasticService();
+    // BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
+    // boolQueryBuilder.must(elasticService.matchQuery("CARD_SUP_REL", "P"));
+    // boolQueryBuilder.must(elasticService.matchQuery("CRDACCT_NBR",
+    // "0000000000015511554"));
+    // JSONObject boolJsonObject = new JSONObject(boolQueryBuilder.toString());
+    // JSONObject query = new JSONObject();
+    // query.put("query", boolJsonObject);
+    // System.out.println(query);
+    // return query.toString();
+    // }
 
     @GetMapping("testAmla")
     public List<Map<String, Object>> executeAmla() {
@@ -109,7 +173,8 @@ public class ApiMainController {
     public List<AmlaRuleResult> newAmla3(@RequestBody Map isi) {
         List<AmlaRuleResult> hasil = new ArrayList<>();
         CustomRule customRule = new CustomRule(jdbcQueryService, historyMerchTransRepository, null, null, null,
-                refundPoinC_Repository, menyimpangA_Repository2, menyimpangB_Repository2);
+                refundPoinC_Repository, menyimpangA_Repository2, menyimpangB_Repository2,
+                amlaMerchantRuleResultRepository, saldoKreditRepository);
         customRule.setMerchMenyimpangA_Repository(menyimpangA_Repository);
         customRule.setMerchMenyimpangB_Repository(menyimpangB_Repository);
         customRule.setAmlaRuleResultRepository(amlaRuleResultRepository);
@@ -129,7 +194,8 @@ public class ApiMainController {
         List<RuleResult> hasil = new ArrayList<>();
         CustomRule customRule = new CustomRule(jdbcQueryService, historyMerchTransRepository, null, null,
                 this.ruleResultRepository,
-                refundPoinC_Repository, menyimpangA_Repository2, menyimpangB_Repository2);
+                refundPoinC_Repository, menyimpangA_Repository2, menyimpangB_Repository2,
+                amlaMerchantRuleResultRepository, saldoKreditRepository);
         customRule.setMerchMenyimpangA_Repository(menyimpangA_Repository);
         customRule.setMerchMenyimpangB_Repository(menyimpangB_Repository);
         customRule.setAmlaRuleResultRepository(amlaRuleResultRepository);

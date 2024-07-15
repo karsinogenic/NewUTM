@@ -35,6 +35,15 @@ public class AmlaRuleResult {
     @Column(name = "post_date")
     private LocalDate postDate;
 
+    private String accNumber;
+    private String chName;
+    private String companyName;
+    private String apuppt;
+    private String blockAcc;
+
+    @Column(name = "bank_code")
+    private Long bankCode;
+
     @Transient
     @Column(insertable = false, updatable = false)
     private Long hiddenId;
@@ -57,5 +66,7 @@ public class AmlaRuleResult {
 
     @Column(name = "is_sent")
     private Boolean isSent;
+
+    private LocalDate actionDate;
 
 }

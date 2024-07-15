@@ -24,12 +24,15 @@ import com.mega.project.utm.Models.HistoryMerchTrans;
 import com.mega.project.utm.Models.QR002;
 import com.mega.project.utm.Models.RuleResult;
 import com.mega.project.utm.Models.TempHistoryMerchTrans;
+import com.mega.project.utm.Models.AMLA.AmlaMerchantRuleResult;
 import com.mega.project.utm.Models.AMLA.AmlaRuleResult;
+import com.mega.project.utm.Models.AMLA.AmlaSaldoKredit;
 import com.mega.project.utm.Models.AMLA.MenyimpangA;
 import com.mega.project.utm.Models.AMLA.MenyimpangB;
 import com.mega.project.utm.Models.AMLA.MerchMenyimpangA;
 import com.mega.project.utm.Models.AMLA.MerchMenyimpangB;
 import com.mega.project.utm.Models.AMLA.RefundPoin;
+import com.mega.project.utm.Repositories.AmlaMerchantRuleResultRepository;
 import com.mega.project.utm.Repositories.AmlaRuleResultRepository;
 import com.mega.project.utm.Repositories.HistoryMemoRepository;
 import com.mega.project.utm.Repositories.HistoryMerchTransRepository;
@@ -39,6 +42,7 @@ import com.mega.project.utm.Repositories.MerchMenyimpangA_Repository;
 import com.mega.project.utm.Repositories.MerchMenyimpangB_Repository;
 import com.mega.project.utm.Repositories.RefundPoinRepository;
 import com.mega.project.utm.Repositories.RuleResultRepository;
+import com.mega.project.utm.Repositories.SaldoKreditRepository;
 import com.mega.project.utm.Repositories.TempHistoryMerchTransRepository;
 import static java.time.temporal.ChronoUnit.MINUTES;
 
@@ -54,14 +58,18 @@ public class CustomRule {
     private MerchMenyimpangA_Repository merchMenyimpangA_Repository;
     private MerchMenyimpangB_Repository merchMenyimpangB_Repository;
     private AmlaRuleResultRepository amlaRuleResultRepository;
+    private AmlaMerchantRuleResultRepository amlaMerchantRuleResultRepository;
     private MenyimpangA_Repository menyimpangA_Repository;
     private MenyimpangB_Repository menyimpangB_Repository;
+    private SaldoKreditRepository saldoKreditRepository;
 
     public CustomRule(JdbcQueryService jdbcQueryService, HistoryMerchTransRepository historyMerchTransRepository,
             TempHistoryMerchTransRepository tempHistoryMerchTransRepository,
             HistoryMemoRepository historyMemoRepository, RuleResultRepository ruleResultRepository,
             RefundPoinRepository refundPoinRepository, MenyimpangA_Repository menyimpangA_Repository,
-            MenyimpangB_Repository menyimpangB_Repository) {
+            MenyimpangB_Repository menyimpangB_Repository,
+            AmlaMerchantRuleResultRepository amlaMerchantRuleResultRepository,
+            SaldoKreditRepository saldoKreditRepository) {
         this.jdbcQueryService = jdbcQueryService;
         this.historyMerchTransRepository = historyMerchTransRepository;
         this.tempHistoryMerchTransRepository = tempHistoryMerchTransRepository;
@@ -70,6 +78,8 @@ public class CustomRule {
         this.refundPoinRepository = refundPoinRepository;
         this.menyimpangA_Repository = menyimpangA_Repository;
         this.menyimpangB_Repository = menyimpangB_Repository;
+        this.amlaMerchantRuleResultRepository = amlaMerchantRuleResultRepository;
+        this.saldoKreditRepository = saldoKreditRepository;
 
     }
 
@@ -352,6 +362,7 @@ public class CustomRule {
         List<RefundPoin> refundPoins = new ArrayList<>();
         List<AmlaRuleResult> hasil = new ArrayList<>();
         String julianDate = localDate.format(DateTimeFormatter.ISO_ORDINAL_DATE).replace("-", "");
+        System.out.println(julianDate);
         if (this.refundPoinRepository.findByJulianDate(Long.valueOf(julianDate)).isEmpty()) {
             for (Map isi : data) {
                 String randUUID = UUID.randomUUID().toString();
@@ -385,9 +396,70 @@ public class CustomRule {
         refundPoins = this.refundPoinRepository.findByJulianDate(Long.valueOf(julianDate));
         for (RefundPoin isix : refundPoins) {
             AmlaRuleResult amlaRuleResult = new AmlaRuleResult();
+            amlaRuleResult.setCompanyName(isix.getCustEmpName());
+            amlaRuleResult.setBlockAcc(isix.getAccountBlockCode());
+            amlaRuleResult.setApuppt(isix.getCustGoccCode());
             amlaRuleResult.setAmlaId(isix.getId());
             amlaRuleResult.setPostDate(localDate);
             amlaRuleResult.setTriggeredRule(isix.getTriggeredRule());
+            amlaRuleResult.setChName(isix.getCustLocalName());
+            amlaRuleResult.setAccNumber(isix.getAccNumber());
+            amlaRuleResult.setBankCode(isix.getBankNumber());
+            // amlaRuleResult.setIsLocked(false);
+            amlaRuleResult.setIsSent(false);
+            hasil.add(amlaRuleResult);
+        }
+        return hasil;
+    }
+
+    public List<AmlaRuleResult> postToSaldoKredit(List<Map<String, Object>> data, String rule, LocalDate localDate) {
+        List<AmlaSaldoKredit> saldoKredits = new ArrayList<>();
+        List<AmlaRuleResult> hasil = new ArrayList<>();
+        String julianDate = localDate.format(DateTimeFormatter.ISO_ORDINAL_DATE).replace("-", "");
+        if (this.saldoKreditRepository.findByJulianDateAndTriggeredRule(Long.valueOf(julianDate), rule).isEmpty()) {
+            for (Map isi : data) {
+                String randUUID = UUID.randomUUID().toString();
+                AmlaSaldoKredit saldoKredit = new AmlaSaldoKredit();
+                saldoKredit.setJulianDate(getValueLong(isi, "julian_mis_date"));
+                saldoKredit.setMisDate(getValueString(isi, "mis_date"));
+                saldoKredit.setBankNumber(getValueLong(isi, "bank_number"));
+                saldoKredit.setRemarks(getValueString(isi, "remarks"));
+                saldoKredit.setKredit(getValueString(isi, "kredit"));
+                saldoKredit.setCcNumber(getValueString(isi, "nomer_kartu_kredit"));
+                saldoKredit.setCustLocalName(getValueString(isi, "nama_pemilik_cc"));
+                saldoKredit.setAccNumber(getValueString(isi, "fin_acct"));
+                saldoKredit.setCardBlock(getValueString(isi, "card_block"));
+                saldoKredit.setCardStatus(getValueString(isi, "card_status"));
+                saldoKredit.setDateBlock(getValueLong(isi, "date_block"));
+                saldoKredit.setAccountBlockCode(getValueString(isi, "account_block"));
+                saldoKredit.setLastStmDate(getValueLong(isi, "last_stmt_date"));
+                saldoKredit.setDueDate(getValueLong(isi, "due_date"));
+                saldoKredit.setLimit(getValueString(isi, "limit"));
+                saldoKredit.setOs(getValueString(isi, "os"));
+                saldoKredit.setTrxGantung(getValueString(isi, "trx_gantung"));
+                saldoKredit.setCompanyCity(getValueString(isi, "company_city"));
+                saldoKredit.setCompanyName(getValueString(isi, "company_name"));
+                saldoKredit.setPhoneNumber(getValueString(isi, "phone_number"));
+                saldoKredit.setCustGoccCode(getValueString(isi, "apu_ppt"));
+                saldoKredit.setTriggeredRule(rule);
+                saldoKredit.setCreatedAt(LocalDate.now());
+                saldoKredits.add(saldoKredit);
+            }
+            this.saldoKreditRepository.saveAll(saldoKredits);
+        }
+        saldoKredits = this.saldoKreditRepository.findByJulianDateAndTriggeredRule(Long.valueOf(julianDate), rule);
+        for (AmlaSaldoKredit isix : saldoKredits) {
+            AmlaRuleResult amlaRuleResult = new AmlaRuleResult();
+            amlaRuleResult.setCompanyName(isix.getCompanyName());
+            amlaRuleResult.setBlockAcc(isix.getAccountBlockCode());
+            amlaRuleResult.setApuppt(isix.getCustGoccCode());
+            amlaRuleResult.setAmlaId(isix.getId());
+            amlaRuleResult.setPostDate(localDate);
+            amlaRuleResult.setTriggeredRule(isix.getTriggeredRule());
+            amlaRuleResult.setChName(isix.getCustLocalName());
+            amlaRuleResult.setAccNumber(isix.getAccNumber());
+            amlaRuleResult.setBankCode(isix.getBankNumber());
+
             // amlaRuleResult.setIsLocked(false);
             amlaRuleResult.setIsSent(false);
             hasil.add(amlaRuleResult);
@@ -405,6 +477,7 @@ public class CustomRule {
 
     public List<AmlaRuleResult> allAmla(LocalDate localDate) {
         List<AmlaRuleResult> hasil = new ArrayList<>();
+        List<AmlaMerchantRuleResult> hasilMerchant = new ArrayList<>();
         CustomQuery customQuery = new CustomQuery(localDate);
         System.out.println("localdate: " + localDate.toString());
         List<Map<String, Object>> trm001 = jdbcQueryService.executeCustomQuery(customQuery.TRM001());
@@ -418,32 +491,48 @@ public class CustomRule {
         List<Map<String, Object>> trm006 = jdbcQueryService.executeCustomQuery(customQuery.TRM006());
         List<AmlaRuleResult> trm006Amla = this.postToRefundPoin(trm006, "TRM006", localDate);
         List<Map<String, Object>> trm004 = jdbcQueryService.executeCustomQuery(customQuery.TRM004());
-        List<AmlaRuleResult> trm004Amla = this.postToMerchantMenyimpangA(trm004, "TRM004", localDate);
+        List<AmlaMerchantRuleResult> trm004Amla = this.postToMerchantMenyimpangA(trm004, "TRM004", localDate);
         List<Map<String, Object>> trm005 = jdbcQueryService.executeCustomQuery(customQuery.TRM005());
-        List<AmlaRuleResult> trm005Amla = this.postToMerchantMenyimpangB(trm005, "TRM005", localDate);
-        // System.out.println(trm004Amla.size());
-        // System.out.println(trm005Amla.size());
-        // System.out.println(trm006Amla.size());
+        List<AmlaMerchantRuleResult> trm005Amla = this.postToMerchantMenyimpangB(trm005, "TRM005", localDate);
+
+        List<Map<String, Object>> sk1 = jdbcQueryService.executeCustomQuery(customQuery.SK1());
+        List<AmlaRuleResult> sk1Amla = this.postToSaldoKredit(sk1, "SK1", localDate);
+        List<Map<String, Object>> sk2 = jdbcQueryService.executeCustomQuery(customQuery.SK2());
+        List<AmlaRuleResult> sk2Amla = this.postToSaldoKredit(sk2, "SK2", localDate);
+        List<Map<String, Object>> sk3 = jdbcQueryService.executeCustomQuery(customQuery.SK3());
+        List<AmlaRuleResult> sk3Amla = this.postToSaldoKredit(sk3, "SK3", localDate);
+
+        // System.out.println(sk1.size());
+        // System.out.println(sk2.size());
+        // System.out.println(sk3.size());
         hasil.addAll(trm001Amla);
         hasil.addAll(trm007Amla);
         hasil.addAll(trm002Amla);
         hasil.addAll(trm003Amla);
-        hasil.addAll(trm005Amla);
-        hasil.addAll(trm004Amla);
+        hasilMerchant.addAll(trm004Amla);
+        hasilMerchant.addAll(trm005Amla);
         hasil.addAll(trm006Amla);
+
+        hasil.addAll(sk1Amla);
+        hasil.addAll(sk2Amla);
+        hasil.addAll(sk3Amla);
         if (this.amlaRuleResultRepository.findByPostDate(localDate).isEmpty()) {
             this.amlaRuleResultRepository.saveAll(hasil);
         }
+        if (this.amlaMerchantRuleResultRepository.findByPostDate(localDate).isEmpty()) {
+            this.amlaMerchantRuleResultRepository.saveAll(hasilMerchant);
+        }
         System.out.println("size: " + hasil.size());
+        System.out.println("size: " + hasilMerchant.size());
 
         // List<Map<String, Object>> hasil1 = jdbcQueryService.executeCustomQuery();
         return hasil;
     }
 
-    private List<AmlaRuleResult> postToMerchantMenyimpangB(List<Map<String, Object>> trm005, String string,
+    private List<AmlaMerchantRuleResult> postToMerchantMenyimpangB(List<Map<String, Object>> trm005, String string,
             LocalDate localDate) {
         List<MerchMenyimpangB> merchB = new ArrayList<>();
-        List<AmlaRuleResult> hasil = new ArrayList<>();
+        List<AmlaMerchantRuleResult> hasil = new ArrayList<>();
         String julianDate = localDate.format(DateTimeFormatter.ISO_ORDINAL_DATE).replace("-", "");
         if (this.merchMenyimpangB_Repository.findByJulianDate(Long.valueOf(julianDate)).isEmpty()) {
             for (Map isi : trm005) {
@@ -471,10 +560,17 @@ public class CustomRule {
         }
         merchB = this.merchMenyimpangB_Repository.findByJulianDate(Long.valueOf(julianDate));
         for (MerchMenyimpangB isix : merchB) {
-            AmlaRuleResult amlaRuleResult = new AmlaRuleResult();
+            AmlaMerchantRuleResult amlaRuleResult = new AmlaMerchantRuleResult();
             amlaRuleResult.setAmlaId(isix.getId());
             amlaRuleResult.setPostDate(localDate);
             amlaRuleResult.setTriggeredRule(isix.getTriggeredRule());
+            amlaRuleResult.setOwnerMemo(isix.getOwnerMemo());
+            amlaRuleResult.setMerchNumber(isix.getMerchNumber());
+            amlaRuleResult.setMerchLocalName(isix.getMerchLocalName());
+            amlaRuleResult.setTotalTrx(isix.getTotalTrx());
+            amlaRuleResult.setMcc(isix.getMcc());
+            amlaRuleResult.setFrequency(isix.getFrequency());
+            amlaRuleResult.setBankCode(isix.getBankNumber());
             // amlaRuleResult.setIsLocked(false);
             amlaRuleResult.setIsSent(false);
             hasil.add(amlaRuleResult);
@@ -482,10 +578,10 @@ public class CustomRule {
         return hasil;
     }
 
-    private List<AmlaRuleResult> postToMerchantMenyimpangA(List<Map<String, Object>> trm004, String string,
+    private List<AmlaMerchantRuleResult> postToMerchantMenyimpangA(List<Map<String, Object>> trm004, String string,
             LocalDate localDate) {
         List<MerchMenyimpangA> merchA = new ArrayList<>();
-        List<AmlaRuleResult> hasil = new ArrayList<>();
+        List<AmlaMerchantRuleResult> hasil = new ArrayList<>();
         String julianDate = localDate.format(DateTimeFormatter.ISO_ORDINAL_DATE).replace("-", "");
         if (this.merchMenyimpangA_Repository.findByJulianDate(Long.valueOf(julianDate)).isEmpty()) {
             for (Map isi : trm004) {
@@ -508,10 +604,16 @@ public class CustomRule {
         }
         merchA = this.merchMenyimpangA_Repository.findByJulianDate(Long.valueOf(julianDate));
         for (MerchMenyimpangA isix : merchA) {
-            AmlaRuleResult amlaRuleResult = new AmlaRuleResult();
+            AmlaMerchantRuleResult amlaRuleResult = new AmlaMerchantRuleResult();
             amlaRuleResult.setAmlaId(isix.getId());
             amlaRuleResult.setPostDate(localDate);
             amlaRuleResult.setTriggeredRule(isix.getTriggeredRule());
+            amlaRuleResult.setOwnerMemo(isix.getOwnerMemo());
+            amlaRuleResult.setMerchNumber(isix.getMerchNumber());
+            amlaRuleResult.setMerchLocalName(isix.getMerchLocalName());
+            amlaRuleResult.setTotalTrx(isix.getTxnAmount());
+            amlaRuleResult.setBankCode(isix.getBankNumber());
+
             // amlaRuleResult.setIsLocked(false);
             amlaRuleResult.setIsSent(false);
             hasil.add(amlaRuleResult);
@@ -550,9 +652,15 @@ public class CustomRule {
         indiA = this.menyimpangA_Repository.findByJulianDate(Long.valueOf(julianDate));
         for (MenyimpangA isix : indiA) {
             AmlaRuleResult amlaRuleResult = new AmlaRuleResult();
+            amlaRuleResult.setCompanyName(isix.getCustEmpName());
+            amlaRuleResult.setBlockAcc(isix.getAccountBlockCode());
+            amlaRuleResult.setApuppt(isix.getCustGoccCode());
             amlaRuleResult.setAmlaId(isix.getId());
             amlaRuleResult.setPostDate(localDate);
             amlaRuleResult.setTriggeredRule(isix.getTriggeredRule());
+            amlaRuleResult.setChName(isix.getCustLocalName());
+            amlaRuleResult.setAccNumber(isix.getAccNumber());
+            amlaRuleResult.setBankCode(isix.getBankNumber());
             // amlaRuleResult.setIsLocked(false);
             amlaRuleResult.setIsSent(false);
             hasil.add(amlaRuleResult);
@@ -590,9 +698,16 @@ public class CustomRule {
         indiB = this.menyimpangB_Repository.findByJulianDate(Long.valueOf(julianDate));
         for (MenyimpangB isix : indiB) {
             AmlaRuleResult amlaRuleResult = new AmlaRuleResult();
+            amlaRuleResult.setCompanyName(isix.getCustEmpName());
+            amlaRuleResult.setBlockAcc(isix.getAccountBlockCode());
+            amlaRuleResult.setApuppt(isix.getCustGoccCode());
             amlaRuleResult.setAmlaId(isix.getId());
             amlaRuleResult.setPostDate(localDate);
             amlaRuleResult.setTriggeredRule(isix.getTriggeredRule());
+            amlaRuleResult.setChName(isix.getCustLocalName());
+            amlaRuleResult.setAccNumber(isix.getAccNumber());
+            amlaRuleResult.setBankCode(isix.getBankNumber());
+
             // amlaRuleResult.setIsLocked(false);
             amlaRuleResult.setIsSent(false);
             hasil.add(amlaRuleResult);

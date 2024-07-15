@@ -145,6 +145,7 @@
   "@vaadin/vaadin-usage-statistics": "2.1.2",
   "@vaadin/vertical-layout": "24.0.2",
   "@vaadin/virtual-list": "24.0.2",
+  "@webcomponents/shadycss": "1.11.2",
   "construct-style-sheets-polyfill": "3.1.0",
   "cookieconsent": "3.1.1",
   "date-fns": "2.29.3",
@@ -245,6 +246,7 @@
   "Frontend/generated/jar-resources/cookieConsentConnector.js",
   "Frontend/generated/jar-resources/datepickerConnector.js",
   "Frontend/generated/jar-resources/dndConnector-es6.js",
+  "Frontend/generated/jar-resources/file-download-wrapper.js",
   "Frontend/generated/jar-resources/flow-component-renderer.js",
   "Frontend/generated/jar-resources/gridConnector.js",
   "Frontend/generated/jar-resources/gridProConnector.js",
@@ -269,6 +271,7 @@
   "cookieConsentConnector.js": "cc362ee370ce0a48d6c0f6882a5faf7fefbda89ea7ac9f483b7b4d65eab9cdf5",
   "datepickerConnector.js": "84d25236e1e478c2e181a7881464ad75228a30ccd99d60f78186f0804b6a4a37",
   "dndConnector-es6.js": "d1923b7ec5655346bc130c7ce477d69eb3776417ddc942dd7f69fee1188e0ddf",
+  "file-download-wrapper.js": "fcecf1df113b66ad87767587f0049d1b16c42ca9216e5d7cb7efce58b96b058b",
   "flow-component-renderer.js": "69175eaf0e9c85e3e6574203778bdaeb2de62735c2b7279d1925d780797c2018",
   "gridConnector.js": "844651edd2d8980c5f9d344cc2b8fb0f0f34c0127ce6f0fe04e873930cc1d13f",
   "gridProConnector.js": "bda2f830ef5a534e672457a633787dad9d7e69467b90330d1f5310d01dcbb61f",
@@ -288,7 +291,7 @@
   "myapp": "{\n  \"lumoImports\" : [ \"typography\", \"color\", \"spacing\", \"badge\", \"utility\" ]\n}"
  },
  "entryScripts": [
-  "VAADIN/build/indexhtml-b430cf0c.js"
+  "VAADIN/build/indexhtml-4cf30727.js"
  ],
  "webComponents": [],
  "packageJsonHash": "bb46f203b8ecdc37ff8b860c2ba464a0317f2c208eb181c889bd73856137e471"

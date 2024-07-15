@@ -6,7 +6,8 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
 
-import org.vaadin.crudui.crud.impl.GridCrud;
+// import org.vaadin.crudui.crud.impl.Grid;
+// import org.vaadin.crudui.crud.impl.Grid;
 
 import com.mega.project.utm.Models.AMLA.AmlaRuleResult;
 import com.mega.project.utm.Repositories.AmlaRuleResultRepository;
@@ -16,6 +17,7 @@ import com.mega.project.utm.views.Components.MyNotification;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -34,133 +36,175 @@ import jakarta.annotation.security.RolesAllowed;
 @Route(value = "amla/approval", layout = MainLayout.class)
 public class ApprovalAMLAView extends VerticalLayout {
 
-    private CustomRule customRule;
-    private String Id;
-    private String AmlaId;
-    private String RuleCode;
-    private AmlaRuleResultRepository amlaRuleResultRepository;
-    private MyNotification myNotification;
+        private CustomRule customRule;
+        private String Id;
+        private String AmlaId;
+        private String RuleCode;
+        private AmlaRuleResultRepository amlaRuleResultRepository;
+        private MyNotification myNotification;
 
-    public ApprovalAMLAView(CustomRule customRule, AmlaRuleResultRepository amlaRuleResultRepository,
-            MyNotification myNotification) {
-        this.customRule = customRule;
-        this.amlaRuleResultRepository = amlaRuleResultRepository;
-        this.myNotification = myNotification;
-        String current_user = VaadinSession.getCurrent().getAttribute("username").toString();
+        public ApprovalAMLAView(CustomRule customRule, AmlaRuleResultRepository amlaRuleResultRepository,
+                        MyNotification myNotification) {
+                this.customRule = customRule;
+                this.amlaRuleResultRepository = amlaRuleResultRepository;
+                this.myNotification = myNotification;
+                String current_user = VaadinSession.getCurrent().getAttribute("username").toString();
 
-        Button detail = new Button("Detail");
-        GridCrud<AmlaRuleResult> crud = new GridCrud<>(AmlaRuleResult.class);
-        detail.addClickListener(event -> {
-            String base64 = Base64.getEncoder().encodeToString((RuleCode + "_" + AmlaId + "_" + Id).getBytes());
-            Notification newNotification = new Notification();
-            AmlaRuleResult reOptional = this.amlaRuleResultRepository.findById(Id).get();
-            // if (reOptional.getLockedBy() == null) {
-            // reOptional.setLockedBy(current_user);
-            // this.amlaRuleResultRepository.save(reOptional);
-            // UI.getCurrent().navigate("amla/detail/" + base64);
-            // } else {
-            // if (reOptional.getLockedBy().equals(current_user)) {
-            UI.getCurrent().navigate("amla/detail/" + base64);
+                Button detail = new Button("Detail");
+                Grid<AmlaRuleResult> crud = new Grid<>(AmlaRuleResult.class);
+                detail.addClickListener(event -> {
+                        String base64 = Base64.getEncoder()
+                                        .encodeToString((RuleCode + "_" + AmlaId + "_" + Id).getBytes());
+                        Notification newNotification = new Notification();
+                        AmlaRuleResult reOptional = this.amlaRuleResultRepository.findById(Id).get();
+                        // if (reOptional.getLockedBy() == null) {
+                        // reOptional.setLockedBy(current_user);
+                        // this.amlaRuleResultRepository.save(reOptional);
+                        // UI.getCurrent().navigate("amla/detail/" + base64);
+                        // } else {
+                        // if (reOptional.getLockedBy().equals(current_user)) {
+                        UI.getCurrent().navigate("amla/detail/" + base64);
 
-            // } else {
-            // newNotification = myNotification
-            // .error("data sedang dikerjakan oleh user " + reOptional.getLockedBy());
-            // newNotification.open();
+                        // } else {
+                        // newNotification = myNotification
+                        // .error("data sedang dikerjakan oleh user " + reOptional.getLockedBy());
+                        // newNotification.open();
 
-            // }
-            // }
-        });
+                        // }
+                        // }
+                });
 
-        List<AmlaRuleResult> ruleResults = this.amlaRuleResultRepository
-                .findByIsSent(true);
-        for (int i = 0; i < ruleResults.size(); i++) {
-            ruleResults.get(i).setHiddenId((long) (i + 1));
-        }
-        crud.setFindAllOperation(() -> ruleResults);
+                List<AmlaRuleResult> ruleResults = this.amlaRuleResultRepository
+                                .findByIsSentMega(true);
+                for (int i = 0; i < ruleResults.size(); i++) {
+                        ruleResults.get(i).setHiddenId((long) (i + 1));
+                }
+                crud.setItems(ruleResults);
 
-        crud.setAddOperationVisible(false);
-        crud.setDeleteOperationVisible(false);
-        crud.setUpdateOperationVisible(false);
-        crud.getCrudLayout().addToolbarComponent(detail);
-        detail.setEnabled(false);
-
-        crud.getGrid().addCellFocusListener(event -> {
-            try {
-                Id = event.getItem().get().getId();
-                AmlaId = event.getItem().get().getAmlaId();
-                RuleCode = event.getItem().get().getTriggeredRule();
-
-                // System.out.println("new Id: " + Id);
-                detail.setEnabled(true);
-            } catch (Exception e) {
-                Id = null;
-                RuleCode = null;
-                AmlaId = null;
+                // crud.setAddOperationVisible(false);
+                // crud.setDeleteOperationVisible(false);
+                // crud.setUpdateOperationVisible(false);
+                // crud.getCrudLayout().addToolbarComponent(detail);
                 detail.setEnabled(false);
-            }
-            // System.out.println(event.getItem().get().getMerchant_id());
-        });
 
-        // crud.getGrid().addC
+                crud.addItemClickListener(event -> {
+                        try {
+                                detail.setEnabled(!detail.isEnabled());
+                                if (detail.isEnabled()) {
+                                        Id = event.getItem().getId();
+                                        AmlaId = event.getItem().getAmlaId();
+                                        RuleCode = event.getItem().getTriggeredRule();
+                                } else {
+                                        Id = null;
+                                        RuleCode = null;
+                                        AmlaId = null;
+                                }
 
-        crud.getGrid().removeAllColumns();
-        // crud.getGrid().("Me\rchant Id", "Card Number", "Total Transactions",
-        // "Date", "Rule", "Memo");
-        // crud.getGrid().addColumn(hasil ->
-        // hasil.getId()).setHeader("Id").setKey("id");
-        // crud.getGrid().addColumn(hasil ->
-        // hasil.getId()).setHeader("Id").setKey("id1");
-        NumberFormat numberFormat = NumberFormat.getNumberInstance(Locale.US);
+                                // System.out.println("new Id: " + Id);
+                        } catch (Exception e) {
+                                Id = null;
+                                RuleCode = null;
+                                AmlaId = null;
+                                detail.setEnabled(false);
+                        }
+                        // System.out.println(event.getItem().getMerchant_id());
+                });
 
-        crud.getGrid().addColumn(hasil -> hasil.getHiddenId()).setHeader("Nomer").setKey("nomer1").setSortable(true);
-        // crud.getGrid().addColumn(hasil -> hasil.getMId()).setHeader("Merchant
-        // Id").setKey("mid1");
-        // crud.getGrid().addColumn(hasil -> hasil.getCardNum()).setHeader("Card
-        // Number").setKey("cardnum1");
-        // crud.getGrid().addColumn(hasil -> hasil.getCount()).setHeader("Total
-        // Transactions").setKey("totalTrx1");
-        // crud.getGrid().addColumn(hasil ->
-        // numberFormat.format(hasil.getSum()).toString())
-        // .setHeader("Total Transactions Amount")
-        // .setKey("totalTrxAmount");
-        crud.getGrid().addColumn(hasil -> hasil.getPostDate()).setHeader("Date").setKey("date1").setSortable(true);
-        crud.getGrid().addColumn(hasil -> hasil.getTriggeredRule()).setHeader("Rule").setKey("rule1").setSortable(true);
-        crud.getGrid().addComponentColumn(new ValueProvider<AmlaRuleResult, Component>() {
+                // crud.addC
 
-            @Override
-            public Component apply(AmlaRuleResult source) {
-                Span pendingx = new Span(createIcon(VaadinIcon.CLOCK),
-                        new Span(source.getIsApproved() == null ? source.getIsSent() ? "Pending" : "No Memo"
-                                : source.getIsApproved() ? "Approved" : "Denied"));
-                pendingx.getElement().getThemeList().add(source.getIsApproved() == null ? "badge"
-                        : source.getIsApproved() ? "badge success" : "badge error");
-                return pendingx;
-            }
+                crud.removeAllColumns();
+                // crud.("Me\rchant Id", "Card Number", "Total Transactions",
+                // "Date", "Rule", "Memo");
+                // crud.addColumn(hasil ->
+                // hasil.getId()).setHeader("Id").setKey("id");
+                // crud.addColumn(hasil ->
+                // hasil.getId()).setHeader("Id").setKey("id1");
+                NumberFormat numberFormat = NumberFormat.getNumberInstance(Locale.US);
 
-        }).setHeader("Approval Status").setSortable(true);
-        // crud.getGrid().addColumn(hasil ->
-        // hasil.getMemo()).setHeader("Memo").setKey("memo1");
-        // crud.getGrid().addColumn(hasil -> hasil.getReviewBy()).setHeader("Review
-        // By").setKey("review1");
+                crud.addColumn(hasil -> hasil.getHiddenId()).setHeader("Nomer").setKey("nomer1")
+                                .setSortable(true)
+                                .setAutoWidth(true);
+                crud.addColumn(hasil -> hasil.getAccNumber()).setHeader("Acc Number").setKey("accnum")
+                                .setSortable(true).setAutoWidth(true);
+                crud.addColumn(hasil -> hasil.getChName()).setHeader("CH Name").setKey("chname")
+                                .setSortable(true)
+                                .setAutoWidth(true);
+                crud.addColumn(hasil -> hasil.getCompanyName()).setHeader("Comp Name").setKey("compname")
+                                .setSortable(true).setAutoWidth(true);
+                crud.addColumn(hasil -> hasil.getApuppt()).setHeader("APUPPT").setKey("apuppt")
+                                .setSortable(true)
+                                .setAutoWidth(true);
+                crud.addColumn(hasil -> hasil.getBlockAcc()).setHeader("Acc Block").setKey("accblock")
+                                .setSortable(true).setAutoWidth(true);
 
-        // crud.getGrid().removeColumnByKey("MId");
+                crud.addColumn(hasil -> hasil.getPostDate()).setHeader("Date").setKey("date1")
+                                .setSortable(true)
+                                .setAutoWidth(true);
+                crud.addColumn(hasil -> hasil.getTriggeredRule()).setHeader("Rule").setKey("rule1")
+                                .setSortable(true)
+                                .setAutoWidth(true);
+                crud.addColumn(hasil -> hasil.getMemo()).setHeader("Memo").setKey("memo1").setSortable(true)
+                                .setAutoWidth(true);
+                crud.addColumn(hasil -> hasil.getBankCode() == 426 ? "Mega" : "Mega Syariah")
+                                .setHeader("Bank")
+                                .setKey("bank1")
+                                .setSortable(true).setAutoWidth(true);
+                crud.addColumn(hasil -> hasil.getApprovedBy()).setHeader("Approved By").setKey("approve1")
+                                .setSortable(true).setAutoWidth(true);
+                crud.addColumn(hasil -> hasil.getReviewBy()).setHeader("Review By").setKey("review1")
+                                .setSortable(true).setAutoWidth(true);
+                // crud
+                // .addColumn(hasil -> hasil.getIsApproved() == null ? "Pending"
+                // : hasil.getIsApproved() == true ? "Approved" : "Denied")
+                // .setHeader("Approval Status").setKey("status1");
+                // crud.addColumn(hasil ->
+                // hasil.getMemo()).setHeader("Memo").setKey("memo1");
+                // crud.addColumn(hasil -> hasil.getReviewBy()).setHeader("Review
+                // By").setKey("review1");
 
-        // crud.getGrid().addColumn(hasil -> hasil.getMId()).setHeader("Merchant
-        // Id").setKey("key");
-        // crud.getGrid().addColumn(hasil -> hasil.getMId()).setHeader("Merchant
-        // Id").setKey("key");
-        // crud.getGrid().addColumn(hasil -> hasil.getMId()).setHeader("Merchant
-        // Id").setKey("key");
-        // crud.getGrid().setColumns("MId", "cardNum", "count", "date", "rule", "memo");
-        // crud.getGrid().set
+                // crud
+                // .addColumn(hasil -> hasil.getIsApproved() == null ? pending1
+                // : hasil.getIsApproved() == true ? confirmed1 : denied1)
+                // .setHeader("Approval Status").setKey("status1");
+                crud.addColumn(hasil -> hasil.getStatus()).setHeader("Status").setSortable(true)
+                                .setAutoWidth(true);
+                crud.addComponentColumn(new ValueProvider<AmlaRuleResult, Component>() {
 
-        add(crud);
-    }
+                        @Override
+                        public Component apply(AmlaRuleResult source) {
+                                Span pendingx = new Span(createIcon(VaadinIcon.CLOCK),
+                                                new Span(source.getIsApproved() == null
+                                                                ? source.getIsSent() ? "Pending" : "No Memo"
+                                                                : source.getIsApproved() ? "Approved" : "Denied"));
+                                pendingx.getElement().getThemeList().add(source.getIsApproved() == null ? "badge"
+                                                : source.getIsApproved() ? "badge success" : "badge error");
+                                return pendingx;
+                        }
 
-    private Icon createIcon(VaadinIcon vaadinIcon) {
-        Icon icon = vaadinIcon.create();
-        icon.getStyle().set("padding", "var(--lumo-space-xs");
-        return icon;
-    }
+                }).setHeader("Approval Status").setSortable(true).setAutoWidth(true);
+                // crud.addColumn(hasil ->
+                // hasil.getMemo()).setHeader("Memo").setKey("memo1");
+                // crud.addColumn(hasil -> hasil.getReviewBy()).setHeader("Review
+                // By").setKey("review1");
+
+                // crud.removeColumnByKey("MId");
+
+                // crud.addColumn(hasil -> hasil.getMId()).setHeader("Merchant
+                // Id").setKey("key");
+                // crud.addColumn(hasil -> hasil.getMId()).setHeader("Merchant
+                // Id").setKey("key");
+                // crud.addColumn(hasil -> hasil.getMId()).setHeader("Merchant
+                // Id").setKey("key");
+                // crud.setColumns("MId", "cardNum", "count", "date", "rule", "memo");
+                // crud.set
+                VerticalLayout vl = new VerticalLayout(detail, crud);
+                add(vl);
+        }
+
+        private Icon createIcon(VaadinIcon vaadinIcon) {
+                Icon icon = vaadinIcon.create();
+                icon.getStyle().set("padding", "var(--lumo-space-xs");
+                return icon;
+        }
 
 }

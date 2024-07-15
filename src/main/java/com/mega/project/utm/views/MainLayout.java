@@ -2,7 +2,9 @@ package com.mega.project.utm.views;
 
 import com.mega.project.utm.Models.RuleResult;
 import com.mega.project.utm.Models.User;
+import com.mega.project.utm.Models.AMLA.AmlaMerchantRuleResult;
 import com.mega.project.utm.Models.AMLA.AmlaRuleResult;
+import com.mega.project.utm.Repositories.AmlaMerchantRuleResultRepository;
 import com.mega.project.utm.Repositories.AmlaRuleResultRepository;
 import com.mega.project.utm.Repositories.RuleResultRepository;
 import com.mega.project.utm.Repositories.UserRepository;
@@ -74,12 +76,14 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
     private UserRepository userRepository;
 
     private AmlaRuleResultRepository amlaRuleResultRepository;
+    private AmlaMerchantRuleResultRepository amlaMerchantRuleResultRepository;
 
     private RuleResultRepository ruleResultRepository;
 
     private CustomRule customRule;
 
     private List<AmlaRuleResult> ruleResults;
+    private List<AmlaMerchantRuleResult> ruleResultsMerchant;
 
     private List<RuleResult> qrRuleResults;
 
@@ -87,15 +91,17 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
 
     public MainLayout(VaadinSessionConfiguration vaadinSessionConfiguration, UserRepository userRepository,
             CustomRule customRule, AmlaRuleResultRepository amlaRuleResultRepository,
-            RuleResultRepository ruleResultRepository) {
+            RuleResultRepository ruleResultRepository,
+            AmlaMerchantRuleResultRepository amlaMerchantRuleResultRepository) {
         this.vaadinSessionConfiguration = vaadinSessionConfiguration;
         this.amlaRuleResultRepository = amlaRuleResultRepository;
         RoleService roleService = new RoleService();
         this.userRepository = userRepository;
         this.customRule = customRule;
         this.ruleResultRepository = ruleResultRepository;
+        this.amlaMerchantRuleResultRepository = amlaMerchantRuleResultRepository;
 
-        this.customRule.allRule(LocalDate.now().minusDays(1));
+        // this.customRule.allRule(LocalDate.now().minusDays(1));
 
         role = roleService.getRole();
 
@@ -246,10 +252,16 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
         historyQRCounter.getElement().setAttribute("aria-label", "12 unread messages");
 
         ruleResults = this.amlaRuleResultRepository
-                .findByIsSentAndIsApprovedIsNull(false);
+                .findByIsSentAndIsApprovedIsNullMega(false);
         Span inboxAMLACounter = new Span(String.valueOf(ruleResults.size()));
         inboxAMLACounter.getElement().getThemeList().add("badge contrast pill");
         inboxAMLACounter.getElement().setAttribute("aria-label", "12 unread messages");
+
+        ruleResults = this.amlaRuleResultRepository
+                .findByIsSentAndIsApprovedIsNullSyariah(false);
+        Span inboxAMLASyariahCounter = new Span(String.valueOf(ruleResults.size()));
+        inboxAMLASyariahCounter.getElement().getThemeList().add("badge contrast pill");
+        inboxAMLASyariahCounter.getElement().setAttribute("aria-label", "12 unread messages");
 
         ruleResults = this.amlaRuleResultRepository
                 .findByPostDateApproved(LocalDate.of(2023, 11, 8));
@@ -258,15 +270,46 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
         historyAMLACounter.getElement().setAttribute("aria-label", "12 unread messages");
 
         ruleResults = this.amlaRuleResultRepository
-                .findByIsSent(true);
+                .findByIsSentMega(true);
         Span inboxAMLACounterApproval = new Span(String.valueOf(ruleResults.size()));
         inboxAMLACounterApproval.getElement().getThemeList().add("badge contrast pill");
         inboxAMLACounterApproval.getElement().setAttribute("aria-label", "12 unread messages");
+
+        ruleResults = this.amlaRuleResultRepository
+                .findByIsSentSyariah(true);
+        Span inboxAMLASyariahCounterApproval = new Span(String.valueOf(ruleResults.size()));
+        inboxAMLASyariahCounterApproval.getElement().getThemeList().add("badge contrast pill");
+        inboxAMLASyariahCounterApproval.getElement().setAttribute("aria-label", "12 unread messages");
+
+        ruleResultsMerchant = this.amlaMerchantRuleResultRepository
+                .findByIsSentAndIsApprovedIsNullMega(false);
+        Span inboxAMLAMerchantCounter = new Span(String.valueOf(ruleResultsMerchant.size()));
+        inboxAMLAMerchantCounter.getElement().getThemeList().add("badge contrast pill");
+        inboxAMLAMerchantCounter.getElement().setAttribute("aria-label", "12 unread messages");
+
+        ruleResultsMerchant = this.amlaMerchantRuleResultRepository
+                .findByIsSentAndIsApprovedIsNullSyariah(false);
+        Span inboxAMLAMerchantSyariahCounter = new Span(String.valueOf(ruleResultsMerchant.size()));
+        inboxAMLAMerchantSyariahCounter.getElement().getThemeList().add("badge contrast pill");
+        inboxAMLAMerchantSyariahCounter.getElement().setAttribute("aria-label", "12 unread messages");
+
+        ruleResultsMerchant = this.amlaMerchantRuleResultRepository
+                .findByPostDateApproved(LocalDate.of(2023, 11, 8));
+        Span historyAMLAMerchantCounter = new Span(String.valueOf(ruleResultsMerchant.size()));
+        historyAMLAMerchantCounter.getElement().getThemeList().add("badge contrast pill");
+        historyAMLAMerchantCounter.getElement().setAttribute("aria-label", "12 unread messages");
+
+        ruleResultsMerchant = this.amlaMerchantRuleResultRepository
+                .findByIsSent(true);
+        Span inboxAMLAMerchantCounterApproval = new Span(String.valueOf(ruleResultsMerchant.size()));
+        inboxAMLAMerchantCounterApproval.getElement().getThemeList().add("badge contrast pill");
+        inboxAMLAMerchantCounterApproval.getElement().setAttribute("aria-label", "12 unread messages");
 
         AppNav nav = new AppNav();
 
         AppNavItem subNavQR = new AppNavItem("QR", "qr");
         AppNavItem subNavAMLA = new AppNavItem("AMLA", "amla");
+        AppNavItem subNavAMLAMerchant = new AppNavItem("AMLA Merchant", "amla-merchant");
         AppNavItem subNavUser = new AppNavItem("USER", "user");
         subNavUser.setVisible(false);
 
@@ -281,12 +324,21 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
         subNavQR.addItem(new AppNavItem("History", HistoryView.class, historyQRCounter));
 
         subNavAMLA.addItem(new AppNavItem("Inbox", "amla/inbox", inboxAMLACounter));
+        subNavAMLA.addItem(new AppNavItem("Inbox Syariah", "amla-syariah/inbox", inboxAMLASyariahCounter));
         subNavAMLA.addItem(new AppNavItem("History", "amla/history", historyAMLACounter));
+        subNavAMLAMerchant.addItem(new AppNavItem("Inbox", "amla-merchant/inbox", inboxAMLAMerchantCounter));
+        subNavAMLAMerchant.addItem(
+                new AppNavItem("Inbox Syariah", "amla-merchant-syariah/inbox", inboxAMLAMerchantSyariahCounter));
+        subNavAMLAMerchant.addItem(new AppNavItem("History", "amla-merchant/history", historyAMLAMerchantCounter));
         if (!role.contains("ANALYST")) {
             subNavAMLA.addItem(new AppNavItem("Approval", "amla/approval", inboxAMLACounterApproval));
+            subNavAMLA.addItem(
+                    new AppNavItem("Approval Syariah", "amla-syariah/approval", inboxAMLASyariahCounterApproval));
+            subNavAMLAMerchant
+                    .addItem(new AppNavItem("Approval", "amla-merchant/approval", inboxAMLAMerchantCounterApproval));
         }
         // nav.addItem(new AppNavItem("Dashboard", DashboardView.class));
-        nav.addItem(subNavQR, subNavAMLA, subNavUser);
+        nav.addItem(subNavQR, subNavAMLA, subNavAMLAMerchant, subNavUser);
         // nav.addItem(new AppNavItem("TEST", TestView.class));
         // nav.addItem(new AppNavItem("Tier", TierView.class));
         // nav.addItem(new AppNavItem("Parameter", ParameterView.class));

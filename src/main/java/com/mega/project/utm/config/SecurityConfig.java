@@ -37,6 +37,7 @@ public class SecurityConfig extends VaadinWebSecurity { // <2>
             auth.requestMatchers(AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/session-end")).permitAll();
             auth.requestMatchers(AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/login")).permitAll();
             auth.requestMatchers(AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/bootstrap_5.3.2/**")).permitAll();
+            auth.requestMatchers(AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/actuator/**")).permitAll();
         }).formLogin()
                 .loginPage("/login")
                 .failureHandler(authenticationFailureHandler())

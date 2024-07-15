@@ -155,4 +155,34 @@ public class CustomQuery {
         return query;
     }
 
+    public String SK1() {
+        String julianDate = ldt.format(DateTimeFormatter.ISO_ORDINAL_DATE).replace("-", "");
+        String query = """
+                select * from "cronos_saldo_kredit_a" where "julian_mis_date" ="""
+                + julianDate + """
+                        ;
+                        """;
+        return query;
+    }
+
+    public String SK2() {
+        String julianDate = ldt.format(DateTimeFormatter.ISO_ORDINAL_DATE).replace("-", "");
+        String query = """
+                select * from "cronos_saldo_kredit_b" where "julian_mis_date" ="""
+                + julianDate + """
+                        ;
+                        """;
+        return query;
+    }
+
+    public String SK3() {
+        String julianDate = ldt.format(DateTimeFormatter.ISO_ORDINAL_DATE).replace("-", "");
+        String query = """
+                select * from "cronos_saldo_kredit_c" where "julian_mis_date" ="""
+                + julianDate + """
+                        ;
+                        """;
+        return query;
+    }
+
 }

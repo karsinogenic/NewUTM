@@ -100,8 +100,7 @@ public class NewCustomValidation extends SimpleUrlAuthenticationFailureHandler i
                 this.userRepository.save(user);
 
                 // Set username and role attributes in the Vaadin session
-                // VaadinSession.getCurrent().setAttribute("username",
-                // authentication.getName());
+                // System.out.println(authentication.getName());
                 // VaadinSession.getCurrent().setAttribute("role", "ROLE_" + user.getRole());
                 // System.out.println("login");
                 return new UsernamePasswordAuthenticationToken(authentication.getName(),

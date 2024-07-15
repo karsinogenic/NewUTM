@@ -22,10 +22,10 @@ public class MenyimpangB {
     @Column(name = "julian_mis_date")
     private Long julianDate;
 
-    @Column(name = "txn_bank_nbr")
+    @Column(name = "olst_txn_bank_nbr")
     private Long bankNumber;
 
-    @Column(name = "txn_acct_nbr")
+    @Column(name = "olst_txn_acct_nbr")
     private String accNumber;
 
     @Column(name = "cust_local_name")

@@ -74,6 +74,7 @@ public class VaadinSessionConfiguration
 
     @Override
     public void sessionDestroy(SessionDestroyEvent event) {
+        // System.out.println("destroy");
         String username1 = (String) event.getSession().getAttribute("username");
         try {
             User user = this.userRepository.findByNrik(username1);

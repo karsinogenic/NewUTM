@@ -1,18 +1,25 @@
 package com.mega.project.utm.views.AMLA;
 
+import java.io.File;
 import java.text.NumberFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
 
 import org.vaadin.crudui.crud.impl.GridCrud;
+import org.vaadin.olli.FileDownloadWrapper;
 
 import com.mega.project.utm.Models.RuleResult;
+import com.mega.project.utm.Models.AMLA.AmlaMerchantRuleResult;
 import com.mega.project.utm.Models.AMLA.AmlaRuleResult;
 import com.mega.project.utm.Repositories.AmlaRuleResultRepository;
 import com.mega.project.utm.Repositories.RuleResultRepository;
+import com.mega.project.utm.components.appnav.CustomComponent;
+import com.mega.project.utm.services.ExcelWriteRead;
 import com.mega.project.utm.views.MainLayout;
 import com.mega.project.utm.views.Components.MyNotification;
 import com.vaadin.flow.component.ClickEvent;
@@ -51,16 +58,22 @@ public class HistoryAMLAView extends VerticalLayout {
     private String AmlaId;
     private String RuleCode;
     private MyNotification myNotification;
+    Button download = new Button("Click to download");
+    FileDownloadWrapper downloadWrapper;
+    List<AmlaRuleResult> ruleResults;
+
+    private CustomComponent customComponent;
 
     GridCrud<AmlaRuleResult> crud = new GridCrud<>(AmlaRuleResult.class);
 
     public HistoryAMLAView(AmlaRuleResultRepository amlaRuleResultRepository, EntityManager entityManager,
-            MyNotification myNotification) {
+            MyNotification myNotification, CustomComponent customComponent) {
         this.amlaRuleResultRepository = amlaRuleResultRepository;
         this.entityManager = entityManager;
         this.myNotification = myNotification;
+        this.customComponent = customComponent;
 
-        List<AmlaRuleResult> ruleResults = this.amlaRuleResultRepository
+        ruleResults = this.amlaRuleResultRepository
                 .findByPostDateApproved(LocalDate.now().minusDays(1));
         for (int i = 0; i < ruleResults.size(); i++) {
             ruleResults.get(i).setHiddenId(Long.valueOf(i + 1));
@@ -84,7 +97,7 @@ public class HistoryAMLAView extends VerticalLayout {
         datePickerEnd.setI18n(singleFormatI18nEnd);
 
         ComboBox<String> status = new ComboBox<>("Status");
-        status.setItems("Consider Genuine", "Genuine", "Suspect", "Fraud");
+        status.setItems("Wajar", "Tidak Wajar");
 
         ComboBox<String> rule = new ComboBox<>("Rule");
         rule.setItems("TRM001", "TRM002", "TRM003", "TRM004", "TRM005", "TRM006", "TRM007");
@@ -93,6 +106,25 @@ public class HistoryAMLAView extends VerticalLayout {
         TextField mid = new TextField("Merchant Id");
         Button btn = new Button(new Icon(VaadinIcon.SEARCH));
         Button detail = new Button("Detail");
+
+        ExcelWriteRead excelWriteRead = new ExcelWriteRead();
+        String namafile = (LocalDateTime.now().format(DateTimeFormatter.ofPattern("ddMMYYYYHHmmss")).toString());
+        download.setEnabled(false);
+        File file = new File(
+                customComponent.getFilePath() + "AmlaCardHolderReport.xls");
+        downloadWrapper = new FileDownloadWrapper(
+                "Laporan AMLA Card Holder "
+                        + namafile + ".xls",
+                file);
+        download.addClickListener(event -> {
+            // String namafile1 =
+            // (LocalDateTime.now().format(DateTimeFormatter.ofPattern("ddMMYYYYHHmmss")).toString());
+            excelWriteRead.writeXLSAmla(ruleResults, customComponent.getFilePath() + "AmlaCardHolderReport.xls");
+            // FileDownloadWrapper downloadWrapper = new FileDownloadWrapper(
+            // new StreamResource("foo.pdf", () -> new
+            // ByteArrayInputStream("foo".getBytes())));
+        });
+        downloadWrapper.wrapComponent(download);
 
         btn.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
 
@@ -111,44 +143,61 @@ public class HistoryAMLAView extends VerticalLayout {
         crud.setDeleteOperationVisible(false);
         crud.setUpdateOperationVisible(false);
         crud.getCrudLayout().addToolbarComponent(detail);
+        crud.getCrudLayout().addToolbarComponent(downloadWrapper);
         detail.setEnabled(false);
-        crud.getGrid().addCellFocusListener(event -> {
+        crud.getGrid().addItemClickListener(event -> {
             try {
-                Id = event.getItem().get().getId();
-                AmlaId = event.getItem().get().getAmlaId();
-                RuleCode = event.getItem().get().getTriggeredRule();
+                if (Id != event.getItem().getId()) {
+                    detail.setEnabled(Id != event.getItem().getId());
+                    Id = event.getItem().getId();
+                    AmlaId = event.getItem().getAmlaId();
+                    RuleCode = event.getItem().getTriggeredRule();
+                } else {
+                    detail.setEnabled(Id != event.getItem().getId());
+                    Id = null;
+                    RuleCode = null;
+                    AmlaId = null;
+
+                }
 
                 // System.out.println("new Id: " + Id);
-                detail.setEnabled(true);
             } catch (Exception e) {
                 Id = null;
                 RuleCode = null;
                 AmlaId = null;
                 detail.setEnabled(false);
             }
-            // System.out.println(event.getItem().get().getMerchant_id());
+            // System.out.println(event.getItem().getMerchant_id());
         });
 
         NumberFormat numberFormat = NumberFormat.getNumberInstance(Locale.US);
 
-        crud.getGrid().addColumn(hasil -> hasil.getHiddenId()).setHeader("Nomer").setKey("nomer1").setSortable(true);
-        // crud.getGrid().addColumn(hasil -> hasil.getMId()).setHeader("Merchant
-        // Id").setKey("mid1");
-        // crud.getGrid().addColumn(hasil -> hasil.getCardNum()).setHeader("Card
-        // Number").setKey("cardnum1");
-        // crud.getGrid().addColumn(hasil -> hasil.getCount()).setHeader("Total
-        // Transactions").setKey("totalTrx1");
-        // crud.getGrid().addColumn(hasil ->
-        // numberFormat.format(hasil.getSum()).toString())
-        // .setHeader("Total Transactions Amount")
-        // .setKey("totalTrxAmount");
-        crud.getGrid().addColumn(hasil -> hasil.getPostDate()).setHeader("Date").setKey("date1").setSortable(true);
-        crud.getGrid().addColumn(hasil -> hasil.getTriggeredRule()).setHeader("Rule").setKey("rule1").setSortable(true);
-        crud.getGrid().addColumn(hasil -> hasil.getMemo()).setHeader("Memo").setKey("memo1").setSortable(true);
+        crud.getGrid().addColumn(hasil -> hasil.getHiddenId()).setHeader("Nomer").setKey("nomer1").setSortable(true)
+                .setAutoWidth(true);
+        crud.getGrid().addColumn(hasil -> hasil.getAccNumber()).setHeader("Acc Number").setKey("accnum")
+                .setSortable(true).setAutoWidth(true);
+        crud.getGrid().addColumn(hasil -> hasil.getChName()).setHeader("CH Name").setKey("chname").setSortable(true)
+                .setAutoWidth(true);
+        crud.getGrid().addColumn(hasil -> hasil.getCompanyName()).setHeader("Comp Name").setKey("compname")
+                .setSortable(true).setAutoWidth(true);
+        crud.getGrid().addColumn(hasil -> hasil.getApuppt()).setHeader("APUPPT").setKey("apuppt").setSortable(true)
+                .setAutoWidth(true);
+        crud.getGrid().addColumn(hasil -> hasil.getBlockAcc()).setHeader("Acc Block").setKey("accblock")
+                .setSortable(true).setAutoWidth(true);
+
+        crud.getGrid().addColumn(hasil -> hasil.getPostDate()).setHeader("Date").setKey("date1").setSortable(true)
+                .setAutoWidth(true);
+        crud.getGrid().addColumn(hasil -> hasil.getTriggeredRule()).setHeader("Rule").setKey("rule1").setSortable(true)
+                .setAutoWidth(true);
+        crud.getGrid().addColumn(hasil -> hasil.getMemo()).setHeader("Memo").setKey("memo1").setSortable(true)
+                .setAutoWidth(true);
+        crud.getGrid().addColumn(hasil -> hasil.getBankCode() == 426 ? "Mega" : "Mega Syariah").setHeader("Bank")
+                .setKey("bank1")
+                .setSortable(true).setAutoWidth(true);
         crud.getGrid().addColumn(hasil -> hasil.getApprovedBy()).setHeader("Approved By").setKey("approve1")
-                .setSortable(true);
+                .setSortable(true).setAutoWidth(true);
         crud.getGrid().addColumn(hasil -> hasil.getReviewBy()).setHeader("Review By").setKey("review1")
-                .setSortable(true);
+                .setSortable(true).setAutoWidth(true);
         // crud.getGrid()
         // .addColumn(hasil -> hasil.getIsApproved() == null ? "Pending"
         // : hasil.getIsApproved() == true ? "Approved" : "Denied")
@@ -162,6 +211,7 @@ public class HistoryAMLAView extends VerticalLayout {
         // .addColumn(hasil -> hasil.getIsApproved() == null ? pending1
         // : hasil.getIsApproved() == true ? confirmed1 : denied1)
         // .setHeader("Approval Status").setKey("status1");
+        crud.getGrid().addColumn(hasil -> hasil.getStatus()).setHeader("Status").setSortable(true).setAutoWidth(true);
         crud.getGrid().addComponentColumn(new ValueProvider<AmlaRuleResult, Component>() {
 
             @Override
@@ -174,9 +224,7 @@ public class HistoryAMLAView extends VerticalLayout {
                 return pendingx;
             }
 
-        }).setHeader("Approval Status").setSortable(true);
-
-        crud.getGrid().addColumn(hasil -> hasil.getStatus()).setHeader("Status").setSortable(true);
+        }).setHeader("Approval Status").setSortable(true).setAutoWidth(true);
 
         detail.addClickListener(event -> {
             String base64 = Base64.getEncoder().encodeToString((RuleCode + "_" + AmlaId + "_" + Id).getBytes());
@@ -217,7 +265,7 @@ public class HistoryAMLAView extends VerticalLayout {
             queryList.add(" rr.status = '" + status + "'");
         }
         if (rule != null && !rule.isEmpty()) {
-            queryList.add(" rr.rule = '" + rule + "'");
+            queryList.add(" rr.triggeredRule = '" + rule + "'");
         }
         // if (cardnum != null && !cardnum.isEmpty()) {
         // queryList.add(" rr.cardnum = '" + cardnum + "'");
@@ -236,15 +284,16 @@ public class HistoryAMLAView extends VerticalLayout {
 
         }
 
-        System.out.println("new query: " + jpql.toString());
+        // System.out.println("new query: " + jpql.toString());
 
         TypedQuery<AmlaRuleResult> query = entityManager.createQuery(jpql.toString(), AmlaRuleResult.class);
 
-        List<AmlaRuleResult> resultList = query.getResultList();
-        for (int i = 0; i < resultList.size(); i++) {
-            resultList.get(i).setHiddenId((long) (i + 1));
+        ruleResults = query.getResultList();
+        for (int i = 0; i < ruleResults.size(); i++) {
+            ruleResults.get(i).setHiddenId((long) (i + 1));
         }
-        crud.setFindAllOperation(() -> resultList);
+        download.setEnabled(true);
+        crud.setFindAllOperation(() -> ruleResults);
         crud.refreshGrid();
     }
 

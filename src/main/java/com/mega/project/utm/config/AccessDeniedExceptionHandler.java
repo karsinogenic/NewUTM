@@ -8,6 +8,7 @@ import org.jsoup.safety.Safelist;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.mega.project.utm.views.Error404View;
 import com.mega.project.utm.views.ErrorView;
 import com.mega.project.utm.views.MainLayout;
 import com.vaadin.flow.component.Component;
@@ -48,7 +49,6 @@ public class AccessDeniedExceptionHandler
             // param.put("exception", "URL NOT FOUND");
             // RouteParameters routeParameters = new RouteParameters(param);
             // event.rerouteTo(ErrorView.class);
-            event.rerouteTo("/error/cok");
 
         }
         String path = event.getLocation().getPath();
@@ -61,6 +61,8 @@ public class AccessDeniedExceptionHandler
             RouteParameters routeParameters = new RouteParameters("exception", "cok");
             event.rerouteTo("error");
 
+        } else {
+            event.rerouteTo(Error404View.class);
         }
         path = Jsoup.clean(path, Safelist.none());
         additionalInfo = Jsoup.clean(additionalInfo, Safelist.none());
