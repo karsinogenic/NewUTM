@@ -3,6 +3,7 @@ package com.mega.project.utm.views.Components;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.mega.project.utm.services.JdbcQueryService;
@@ -21,7 +22,7 @@ public class AmlaSummary {
         this.jdbcQueryService = jdbcQueryService;
     }
 
-    public FormLayout allDatas(String query) {
+    public FormLayout allDatas(String query) throws JSONException {
         FormLayout allDatas = new FormLayout();
         List<Map<String, Object>> listHasil3 = this.jdbcQueryService.executeCustomQuery(query);
 

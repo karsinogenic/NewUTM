@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Calendar;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -14,6 +15,7 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.vaadin.crudui.crud.impl.GridCrud;
 
@@ -180,9 +182,17 @@ public class DetailAMLAView extends VerticalLayout implements HasUrlParameter<St
 
         jsonData.remove("id");
         jsonData.remove("createdAt");
-        for (String key : jsonData.keySet()) {
+        Iterator<String> iterator = jsonData.keys();
+        while (iterator.hasNext()) {
+            String key = iterator.next();
             TextField textField = new TextField(key);
-            String value = jsonData.get(key).toString();
+            String value="";
+            try {
+                value = jsonData.get(key).toString();
+            } catch (JSONException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
             if (key.contains("julianDate")) {
                 textField = new TextField("Date");
                 LocalDate localDate = ordinalToGregorian(Integer.valueOf(value.substring(0, 4)),
@@ -246,7 +256,7 @@ public class DetailAMLAView extends VerticalLayout implements HasUrlParameter<St
                 historyMemoRepository.save(latestMemo);
 
                 notif = this.myNotification.success("Berhasil approve");
-                UI.getCurrent().getPage().setLocation("/amla/inbox");
+                UI.getCurrent().getPage().getHistory().back();
 
             } catch (Exception e) {
                 notif = this.myNotification.error("Gagal approve");
@@ -273,7 +283,7 @@ public class DetailAMLAView extends VerticalLayout implements HasUrlParameter<St
                 amlaRuleResultRepository.save(ruleResult);
                 historyMemoRepository.save(latestMemo);
                 notif = this.myNotification.success("Berhasil denied");
-                UI.getCurrent().getPage().setLocation("/amla/inbox");
+                UI.getCurrent().getPage().getHistory().back();
 
             } catch (Exception e) {
                 notif = this.myNotification.error("Gagal denied");
@@ -417,7 +427,7 @@ public class DetailAMLAView extends VerticalLayout implements HasUrlParameter<St
                 notif = this.myNotification.success("Berhasil menambahkan memo");
                 notif.open();
                 dialog.close();
-                UI.getCurrent().getPage().setLocation("/amla/inbox");
+                UI.getCurrent().getPage().getHistory().back();
                 ;
             } catch (Exception ez) {
                 notif = this.myNotification.error("Gagal menambahkan memo");

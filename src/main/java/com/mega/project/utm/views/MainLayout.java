@@ -8,8 +8,8 @@ import com.mega.project.utm.Repositories.AmlaMerchantRuleResultRepository;
 import com.mega.project.utm.Repositories.AmlaRuleResultRepository;
 import com.mega.project.utm.Repositories.RuleResultRepository;
 import com.mega.project.utm.Repositories.UserRepository;
-import com.mega.project.utm.components.appnav.AppNav;
-import com.mega.project.utm.components.appnav.AppNavItem;
+import com.vaadin.flow.component.sidenav.SideNav;
+import com.vaadin.flow.component.sidenav.SideNavItem;
 import com.mega.project.utm.config.VaadinSessionConfiguration;
 import com.mega.project.utm.services.CustomRule;
 import com.mega.project.utm.services.RoleService;
@@ -237,9 +237,9 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
         return null;
     }
 
-    private AppNav createNavigation() {
+    private SideNav createNavigation() {
         // RoleService roleService = new RoleService();
-        // AppNav is not yet an official component.
+        // SideNav is not yet an official component.
         // For documentation, visit https://github.com/vaadin/vcf-nav#readme
         qrRuleResults = this.ruleResultRepository.findAllByMemoIsNull();
         Span inboxQRCounter = new Span(String.valueOf(qrRuleResults.size()));
@@ -305,48 +305,48 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
         inboxAMLAMerchantCounterApproval.getElement().getThemeList().add("badge contrast pill");
         inboxAMLAMerchantCounterApproval.getElement().setAttribute("aria-label", "12 unread messages");
 
-        AppNav nav = new AppNav();
+        SideNav nav = new SideNav();
 
-        AppNavItem subNavQR = new AppNavItem("QR", "qr");
-        AppNavItem subNavAMLA = new AppNavItem("AMLA", "amla");
-        AppNavItem subNavAMLAMerchant = new AppNavItem("AMLA Merchant", "amla-merchant");
-        AppNavItem subNavUser = new AppNavItem("USER", "user");
+        SideNavItem subNavQR = new SideNavItem("QR", "qr");
+        SideNavItem subNavAMLA = new SideNavItem("AMLA", "amla");
+        SideNavItem subNavAMLAMerchant = new SideNavItem("AMLA Merchant", "amla-merchant");
+        SideNavItem subNavUser = new SideNavItem("USER", "user");
         subNavUser.setVisible(false);
 
         if (role.contains("ADMIN")) {
             subNavUser.setVisible(true);
         }
-        // AppNavItem qrInbox = new AppNavItem("Inbox", QR002View.class,
+        // SideNavItem qrInbox = new SideNavItem("Inbox", QR002View.class,
         // VaadinIcon.ENVELOPE.create());
         Icon icon = VaadinIcon.BOOK.create();
 
-        subNavQR.addItem(new AppNavItem("Inbox", QR002View.class, inboxQRCounter));
-        subNavQR.addItem(new AppNavItem("History", HistoryView.class, historyQRCounter));
+        subNavQR.addItem(new SideNavItem("Inbox", QR002View.class, inboxQRCounter));
+        subNavQR.addItem(new SideNavItem("History", HistoryView.class, historyQRCounter));
 
-        subNavAMLA.addItem(new AppNavItem("Inbox", "amla/inbox", inboxAMLACounter));
-        subNavAMLA.addItem(new AppNavItem("Inbox Syariah", "amla-syariah/inbox", inboxAMLASyariahCounter));
-        subNavAMLA.addItem(new AppNavItem("History", "amla/history", historyAMLACounter));
-        subNavAMLAMerchant.addItem(new AppNavItem("Inbox", "amla-merchant/inbox", inboxAMLAMerchantCounter));
+        subNavAMLA.addItem(new SideNavItem("Inbox", "amla/inbox", inboxAMLACounter));
+        subNavAMLA.addItem(new SideNavItem("Inbox Syariah", "amla-syariah/inbox", inboxAMLASyariahCounter));
+        subNavAMLA.addItem(new SideNavItem("History", "amla/history", historyAMLACounter));
+        subNavAMLAMerchant.addItem(new SideNavItem("Inbox", "amla-merchant/inbox", inboxAMLAMerchantCounter));
         subNavAMLAMerchant.addItem(
-                new AppNavItem("Inbox Syariah", "amla-merchant-syariah/inbox", inboxAMLAMerchantSyariahCounter));
-        subNavAMLAMerchant.addItem(new AppNavItem("History", "amla-merchant/history", historyAMLAMerchantCounter));
+                new SideNavItem("Inbox Syariah", "amla-merchant-syariah/inbox", inboxAMLAMerchantSyariahCounter));
+        subNavAMLAMerchant.addItem(new SideNavItem("History", "amla-merchant/history", historyAMLAMerchantCounter));
         if (!role.contains("ANALYST")) {
-            subNavAMLA.addItem(new AppNavItem("Approval", "amla/approval", inboxAMLACounterApproval));
+            subNavAMLA.addItem(new SideNavItem("Approval", "amla/approval", inboxAMLACounterApproval));
             subNavAMLA.addItem(
-                    new AppNavItem("Approval Syariah", "amla-syariah/approval", inboxAMLASyariahCounterApproval));
+                    new SideNavItem("Approval Syariah", "amla-syariah/approval", inboxAMLASyariahCounterApproval));
             subNavAMLAMerchant
-                    .addItem(new AppNavItem("Approval", "amla-merchant/approval", inboxAMLAMerchantCounterApproval));
+                    .addItem(new SideNavItem("Approval", "amla-merchant/approval", inboxAMLAMerchantCounterApproval));
         }
-        // nav.addItem(new AppNavItem("Dashboard", DashboardView.class));
+        // nav.addItem(new SideNavItem("Dashboard", DashboardView.class));
         nav.addItem(subNavQR, subNavAMLA, subNavAMLAMerchant, subNavUser);
-        // nav.addItem(new AppNavItem("TEST", TestView.class));
-        // nav.addItem(new AppNavItem("Tier", TierView.class));
-        // nav.addItem(new AppNavItem("Parameter", ParameterView.class));
-        // nav.addItem(new AppNavItem("Rule", RuleView.class));
-        // nav.addItem(new AppNavItem("Product", ProductView.class));
+        // nav.addItem(new SideNavItem("TEST", TestView.class));
+        // nav.addItem(new SideNavItem("Tier", TierView.class));
+        // nav.addItem(new SideNavItem("Parameter", ParameterView.class));
+        // nav.addItem(new SideNavItem("Rule", RuleView.class));
+        // nav.addItem(new SideNavItem("Product", ProductView.class));
         // if (roleService.isChecker() || roleService.isAdmin()) {
-        // nav.addItem(new AppNavItem("Rule Request", RuleRequestView.class));
-        // nav.addItem(new AppNavItem("Product Request", ProducRequestView.class));
+        // nav.addItem(new SideNavItem("Rule Request", RuleRequestView.class));
+        // nav.addItem(new SideNavItem("Product Request", ProducRequestView.class));
         // }
         // nav.setClassName("nav-bar");
 

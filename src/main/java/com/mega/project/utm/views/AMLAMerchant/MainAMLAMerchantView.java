@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.mega.project.utm.services.JdbcQueryService;
@@ -32,7 +33,7 @@ public class MainAMLAMerchantView extends VerticalLayout {
         private JdbcQueryService jdbcQueryService;
         private AmlaSummary amlaSummary;
 
-        public MainAMLAMerchantView(JdbcQueryService jdbcQueryService) {
+        public MainAMLAMerchantView(JdbcQueryService jdbcQueryService) throws JSONException {
                 this.jdbcQueryService = jdbcQueryService;
                 this.amlaSummary = new AmlaSummary(this.jdbcQueryService);
 

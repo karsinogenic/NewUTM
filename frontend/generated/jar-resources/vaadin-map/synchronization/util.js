@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * This program is available under Vaadin Commercial License and Service Terms.
  *
@@ -26,6 +26,16 @@ export function convertToCoordinateArray(coordinate) {
  */
 export function convertToSizeArray(size) {
   return [size.width, size.height];
+}
+
+/**
+ * Convert from snake-case Java enum value like `BOTTOM_LEFT` to kebab-case OL
+ * enum value like `bottom-left`
+ * @param enumValue
+ * @returns {string}
+ */
+export function convertEnumValue(enumValue) {
+  return enumValue.toLowerCase().replace(/_/, '-');
 }
 
 /**

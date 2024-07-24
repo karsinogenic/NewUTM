@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.mega.project.utm.services.JdbcQueryService;
@@ -26,7 +27,7 @@ public class QRMainView extends VerticalLayout {
 
     private JdbcQueryService jdbcQueryService;
 
-    public QRMainView(JdbcQueryService jdbcQueryService) {
+    public QRMainView(JdbcQueryService jdbcQueryService) throws JSONException {
         this.jdbcQueryService = jdbcQueryService;
 
         FormLayout todayDatas = new FormLayout();
